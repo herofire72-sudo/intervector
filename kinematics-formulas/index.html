@@ -1,0 +1,924 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#eef3fb">
+<script src="https://telegram.org/js/telegram-web-app.js?63"></script>
+<title>Формулы кинематики — интерактивный тренажёр</title>
+<style>
+:root{
+  --blue:#113fa7;
+  --blue2:#0c3692;
+  --teal:#0b9694;
+  --teal2:#0b7e7d;
+  --orange:#ff6b00;
+  --ink:#171717;
+  --muted:#68758f;
+  --line:#cbd5e6;
+  --bg:#eef3fb;
+  --good:#16815f;
+  --good-bg:#eaf8f2;
+  --bad:#c83b32;
+  --bad-bg:#fff0ee;
+  --soft-blue:#eef4ff;
+  --soft-teal:#edf9f8;
+  --soft-orange:#fff5ec;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink)}
+body{
+  font-family:Arial,Helvetica,sans-serif;
+  min-height:var(--tg-viewport-stable-height,100vh);
+  padding-top:var(--tg-content-safe-area-inset-top,0px);
+  padding-right:var(--tg-content-safe-area-inset-right,0px);
+  padding-bottom:var(--tg-content-safe-area-inset-bottom,0px);
+  padding-left:var(--tg-content-safe-area-inset-left,0px);
+  overflow-x:hidden;
+}
+button{font:inherit;touch-action:manipulation}
+.app{
+  width:min(980px,calc(100% - 24px));
+  margin:18px auto;
+  background:#fff;
+  border:3px solid var(--blue2);
+  border-radius:20px;
+  overflow:hidden;
+}
+.header{
+  padding:22px 24px 18px;
+  border-bottom:1px solid #d9e1ef;
+  background:#fff;
+}
+.brand{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap
+}
+.brand-title{
+  margin:0;color:var(--blue2);font-family:"Arial Narrow",Arial,sans-serif;
+  font-size:clamp(27px,4vw,42px);line-height:1;font-weight:900;text-transform:uppercase
+}
+.brand-sub{margin:8px 0 0;color:#36549a;font-size:17px}
+.header-link{color:var(--blue2);font-weight:800;text-decoration:none;white-space:nowrap}
+.progress-wrap{margin-top:18px;display:none}
+.progress-line{height:9px;border-radius:99px;background:#e3e9f4;overflow:hidden}
+.progress-fill{height:100%;width:0;background:var(--blue);transition:width .25s ease}
+.progress-meta{margin-top:7px;display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:14px}
+.main{padding:24px}
+.intro{display:grid;gap:20px}
+.intro-lead{
+  border:2px solid var(--blue);border-radius:15px;padding:20px;background:var(--soft-blue)
+}
+.intro-lead h2{margin:0 0 10px;color:var(--blue2);font-size:27px}
+.intro-lead p{margin:7px 0;font-size:18px;line-height:1.4}
+.phase-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.phase-card{border:1.5px solid var(--line);border-radius:14px;padding:16px;background:#fff}
+.phase-card strong{display:block;color:var(--blue2);font-size:18px;margin-bottom:5px}
+.phase-card:nth-child(2) strong,.phase-card:nth-child(4) strong{color:var(--teal2)}
+.phase-card p{margin:0;color:#44506a;line-height:1.35}
+.notice{
+  border-left:5px solid var(--orange);padding:11px 14px;background:var(--soft-orange);
+  border-radius:8px;font-size:16px;line-height:1.35
+}
+.primary,.secondary,.ghost{
+  border:0;border-radius:11px;padding:13px 18px;font-weight:900;cursor:pointer
+}
+.primary{background:var(--blue);color:#fff}
+.primary:hover{background:var(--blue2)}
+.secondary{background:var(--teal);color:#fff}
+.secondary:hover{background:var(--teal2)}
+.ghost{background:#eef2f8;color:var(--blue2)}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.question-shell{display:none}
+.phase-label{
+  display:inline-flex;align-items:center;gap:8px;
+  border-radius:999px;padding:7px 12px;background:var(--soft-blue);color:var(--blue2);
+  font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:.25px
+}
+.phase-label.teal{background:var(--soft-teal);color:var(--teal2)}
+.phase-label.orange{background:var(--soft-orange);color:#b84e00}
+.prompt{
+  margin:14px 0 6px;font-size:clamp(22px,3.1vw,32px);line-height:1.16;
+  color:#17213a;font-weight:850
+}
+.helper{margin:0 0 18px;color:var(--muted);font-size:16px;line-height:1.35}
+.formula{
+  font-family:"Times New Roman",Georgia,serif;
+  font-size:clamp(27px,4.3vw,40px);
+  font-style:italic;
+  line-height:1.15;
+  color:#111;
+  white-space:nowrap
+}
+.formula sub{font-size:.62em;vertical-align:-.28em}
+.formula sup{font-size:.62em;vertical-align:.52em}
+.roman{font-style:normal}
+.frac{
+  display:inline-flex;vertical-align:middle;flex-direction:column;align-items:stretch;
+  text-align:center;line-height:1.02;margin:0 .10em;min-width:1.15em
+}
+.frac .top{border-bottom:1.7px solid currentColor;padding:0 .14em .08em}
+.frac .bottom{padding:.08em .14em 0}
+.options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}
+.option{
+  min-height:78px;border:1.7px solid #b8c5dc;background:#fff;border-radius:13px;padding:13px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;color:#111;
+  transition:border-color .15s,background .15s,transform .05s
+}
+.option:hover{border-color:var(--blue)}
+.option:active{transform:scale(.995)}
+.option.selected{border:2.5px solid var(--blue);background:var(--soft-blue)}
+.option.correct{border-color:var(--good);background:var(--good-bg)}
+.option.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.option:disabled{cursor:default}
+.feedback{
+  display:none;margin-top:16px;border-radius:11px;padding:12px 14px;line-height:1.35;font-size:16px
+}
+.feedback.good{display:block;background:var(--good-bg);color:#0b6248;border:1px solid #b5e4d2}
+.feedback.bad{display:block;background:var(--bad-bg);color:#9d2822;border:1px solid #f0c4bf}
+.feedback.info{display:block;background:var(--soft-blue);color:#23448f;border:1px solid #c7d8ff}
+.action-row{margin-top:18px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.action-row .right{margin-left:auto;display:flex;gap:10px}
+.build-area{
+  margin:18px 0 6px;padding:18px;border:1.7px solid var(--teal);border-radius:14px;
+  background:var(--soft-teal);text-align:center
+}
+.build-formula{
+  font-family:"Times New Roman",Georgia,serif;font-size:clamp(26px,4.4vw,39px);
+  font-style:italic;line-height:1.55;color:#111
+}
+.build-formula sub,
+.math-piece sub{
+  font-size:.60em;
+  vertical-align:-.20em;
+  line-height:0
+}
+.build-formula sup,
+.math-piece sup{
+  font-size:.60em;
+  vertical-align:.55em;
+  line-height:0
+}
+.slot{
+  display:inline-block;
+  vertical-align:baseline;
+  min-width:1.38em;
+  min-height:1.02em;
+  padding:0 .10em .05em;
+  margin:0 .04em;
+  line-height:1;
+  text-align:center;
+  border-bottom:2.4px solid var(--teal2);
+  color:var(--blue2);
+  cursor:pointer
+}
+.slot .math-piece{
+  display:inline;
+  font:inherit;
+  line-height:1;
+  white-space:nowrap
+}
+.slot.empty:before{
+  content:"?";
+  color:#91aaa8;
+  font-style:normal;
+  font-family:Arial,sans-serif;
+  font-size:.67em;
+  vertical-align:.06em
+}
+.token-bank{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:16px}
+.token{
+  border:1.5px solid #aab9d2;background:#fff;border-radius:10px;padding:9px 13px;
+  cursor:pointer;min-width:52px;color:#17213a
+}
+.token:hover{border-color:var(--teal)}
+.token.used{opacity:.28;pointer-events:none}
+.token .math-piece{
+  font-family:"Times New Roman",Georgia,serif;
+  font-size:25px;
+  font-style:italic;
+  line-height:1.1;
+  white-space:nowrap
+}
+.error-formula{
+  padding:20px 12px;margin-top:15px;border:1.7px solid var(--orange);border-radius:14px;
+  background:var(--soft-orange);text-align:center
+}
+.error-parts{display:flex;align-items:center;justify-content:center;gap:2px;flex-wrap:wrap}
+.error-part{
+  border:0;background:transparent;border-radius:7px;padding:3px 4px;cursor:pointer;
+  font-family:"Times New Roman",Georgia,serif;font-size:clamp(27px,4.2vw,39px);
+  font-style:italic;color:#111
+}
+.error-part sub{font-size:.62em;vertical-align:-.28em}
+.error-part sup{font-size:.62em;vertical-align:.52em}
+.error-part:hover{background:#ffe5cf}
+.error-part.selected{outline:2px solid var(--orange);background:#ffe4cc}
+.replacements{display:none;margin-top:16px}
+.replacements.show{display:block}
+.replacements h4{margin:0 0 9px;color:#7b3d0b}
+.replacement-row{display:flex;gap:9px;flex-wrap:wrap}
+.replacement{
+  border:1.5px solid #d8a274;background:#fff;border-radius:9px;padding:9px 13px;cursor:pointer
+}
+.replacement:hover{border-color:var(--orange);background:#fff8f2}
+.final-shield{
+  border:1.7px solid var(--blue);background:var(--soft-blue);border-radius:12px;padding:12px 14px;
+  color:#264790;margin-bottom:13px
+}
+.results{display:none}
+.result-hero{text-align:center;padding:18px 10px 8px}
+.result-score{
+  font-family:"Arial Narrow",Arial,sans-serif;font-size:clamp(48px,8vw,80px);
+  color:var(--blue2);font-weight:900;line-height:1
+}
+.result-caption{margin-top:9px;color:#4f5d78;font-size:18px}
+.diag{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0}
+.diag-item{border:1.5px solid var(--line);border-radius:13px;padding:14px}
+.diag-item strong{display:block;margin-bottom:7px;color:#253354}
+.diag-value{font-size:25px;font-weight:900;color:var(--blue2)}
+.error-list{margin:15px 0;padding:0;list-style:none;display:grid;gap:8px}
+.error-list li{border-left:4px solid var(--orange);background:var(--soft-orange);padding:10px 12px;border-radius:7px}
+.footer{
+  border-top:1px solid #d9e1ef;padding:12px 24px;display:flex;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;color:#65728e;font-size:13px
+}
+.footer strong{color:var(--blue2)}
+.hidden{display:none!important}
+@media(max-width:680px){
+  .app{width:min(100% - 12px,980px);margin:6px auto;border-width:2px;border-radius:15px}
+  .header,.main{padding:17px 14px}
+  .phase-grid,.options,.diag{grid-template-columns:1fr}
+  .option{min-height:68px}
+  .action-row{display:block}
+  .action-row .right{margin:10px 0 0;display:grid;grid-template-columns:1fr}
+  .action-row>.ghost{width:100%}
+  .primary,.secondary,.ghost{width:100%}
+  .error-parts{gap:0}
+  .formula{white-space:normal}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div class="brand">
+      <div>
+        <h1 class="brand-title">ФОРМУЛЫ КИНЕМАТИКИ</h1>
+        <p class="brand-sub">Тренажёр по равномерному и равноускоренному движению</p>
+      </div>
+      <a class="header-link" href="https://vk.ru/phizege" target="_blank" rel="noopener">vk.ru/phizege</a>
+    </div>
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-line"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-meta"><span id="progressText">Задание 1</span><span id="phaseText"></span></div>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="intro" id="intro">
+      <div class="intro-lead">
+        <h2>Закрепляем только формулы</h2>
+        <p>Здесь нет численных расчётов. Нужно узнавать формулы, восстанавливать их структуру, находить ошибки и выбирать нужную зависимость по смыслу.</p>
+      </div>
+      <div class="phase-grid">
+        <div class="phase-card"><strong>1. Узнай формулу</strong><p>Выберите нужную зависимость среди похожих формул.</p></div>
+        <div class="phase-card"><strong>2. Собери формулу</strong><p>Заполните пропуски, нажимая на обозначения.</p></div>
+        <div class="phase-card"><strong>3. Найди ошибку</strong><p>Укажите неверный фрагмент и исправьте его.</p></div>
+        <div class="phase-card"><strong>4. Выбери по смыслу</strong><p>Определите формулу по известным величинам и тому, что нужно найти.</p></div>
+      </div>
+      <div class="controls"><button class="primary" id="startBtn" type="button">НАЧАТЬ ТРЕНИРОВКУ</button></div>
+    </section>
+
+    <section class="question-shell" id="questionShell" aria-live="polite">
+      <div id="questionContent"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="action-row">
+        <button class="ghost hidden" id="resetBuildBtn" type="button">СБРОСИТЬ</button>
+        <div class="right">
+          <button class="primary" id="checkBtn" type="button">ПРОВЕРИТЬ</button>
+          <button class="secondary hidden" id="nextBtn" type="button">СЛЕДУЮЩЕЕ ЗАДАНИЕ</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="results" id="results">
+      <div class="result-hero">
+        <div class="result-score" id="resultScore">0/0</div>
+        <div class="result-caption" id="resultCaption"></div>
+      </div>
+      <div class="diag" id="diag"></div>
+      <h3>Что стоит повторить</h3>
+      <ul class="error-list" id="errorList"></ul>
+      <div class="controls">
+        <button class="secondary hidden" id="repeatErrorsBtn" type="button">ПОВТОРИТЬ ОШИБКИ</button>
+        <button class="ghost" id="restartBtn" type="button">ПРОЙТИ ЕЩЁ РАЗ</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><span>Кондакова И.С.</span><strong>Интерактив по памятке «Равномерное и равноускоренное движение»</strong></footer>
+</div>
+
+<script>
+// Telegram Mini App integration. The trainer remains fully local:
+// answers, progress and results are not sent anywhere.
+const tg = window.Telegram?.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+
+  try { tg.setBackgroundColor('#eef3fb'); } catch (_) {}
+  try { tg.setHeaderColor('#eef3fb'); } catch (_) {}
+  if (typeof tg.setBottomBarColor === 'function') {
+    try { tg.setBottomBarColor('#eef3fb'); } catch (_) {}
+  }
+}
+
+const F = {
+  S:'<span class="formula">S</span>',
+  Sall:'<span class="formula">S<sub>весь</sub></span>',
+  dx:'<span class="formula">Δx</span>',
+  x:'<span class="formula">x</span>',
+  x0:'<span class="formula">x<sub>0</sub></span>',
+  v:'<span class="formula">v</span>',
+  vsr:'<span class="formula">v<sub>ср</sub></span>',
+  vx:'<span class="formula">v<sub>x</sub></span>',
+  v0x:'<span class="formula">v<sub>0x</sub></span>',
+  ax:'<span class="formula">a<sub>x</sub></span>',
+  t:'<span class="formula">t</span>',
+  tall:'<span class="formula">t<sub>все</sub></span>',
+  t2pow:'<span class="formula">t<sup>2</sup></span>',
+  two:'<span class="formula roman">2</span>'
+};
+const frac=(a,b)=>`<span class="formula"><span class="frac"><span class="top">${a}</span><span class="bottom">${b}</span></span></span>`;
+const eq = {
+  path:`<span class="formula">S = vt</span>`,
+  coordUniform:`<span class="formula">x = x<sub>0</sub> + v<sub>x</sub>t</span>`,
+  velocity:`<span class="formula">v<sub>x</sub> = v<sub>0x</sub> + a<sub>x</sub>t</span>`,
+  displacement:`<span class="formula">Δx = v<sub>0x</sub>t + </span>${frac('a<sub>x</sub>t<sup>2</sup>','2')}`,
+  coordAccel:`<span class="formula">x = x<sub>0</sub> + v<sub>0x</sub>t + </span>${frac('a<sub>x</sub>t<sup>2</sup>','2')}`,
+  dxDef:`<span class="formula">Δx = x − x<sub>0</sub></span>`,
+  avg:`<span class="formula">v<sub>ср</sub> = </span>${frac('S<sub>весь</sub>','t<sub>все</sub>')}`
+};
+
+const recognize = [
+  {id:'r1',type:'mcq',phase:'Узнай формулу',tone:'blue',category:'Равномерное движение',title:'Уравнение координаты при равномерном движении',helper:'',answer:'coordUniform',options:['coordUniform','coordAccel','displacement','dxDef']},
+  {id:'r2',type:'mcq',phase:'Узнай формулу',tone:'teal',category:'Равноускоренное движение',title:'Уравнение проекции скорости при равноускоренном движении',helper:'',answer:'velocity',options:['velocity','coordAccel','displacement','coordUniform']},
+  {id:'r3',type:'mcq',phase:'Узнай формулу',tone:'teal',category:'Равноускоренное движение',title:'Формула проекции перемещения при равноускоренном движении',helper:'',answer:'displacement',options:['displacement','coordAccel','velocity','coordUniform']},
+  {id:'r4',type:'mcq',phase:'Узнай формулу',tone:'teal',category:'Равноускоренное движение',title:'Уравнение координаты при равноускоренном движении',helper:'',answer:'coordAccel',options:['coordAccel','displacement','coordUniform','velocity']},
+  {id:'r5',type:'mcq',phase:'Узнай формулу',tone:'teal',category:'Общие определения',title:'Определение проекции перемещения через координаты',helper:'',answer:'dxDef',options:['dxDef','displacement','coordUniform','coordAccel']}
+];
+
+const build = [
+  {id:'b1',type:'build',phase:'Собери формулу',tone:'blue',category:'Равномерное движение',title:'Восстановите уравнение координаты при равномерном движении',helper:'',tokens:['x0','vx','t','v0x','ax'],expected:['x0','vx','t'],template:'<span class="build-formula">x = {{0}} + {{1}}{{2}}</span>'},
+  {id:'b2',type:'build',phase:'Собери формулу',tone:'teal',category:'Равноускоренное движение',title:'Восстановите уравнение проекции скорости при равноускоренном движении',helper:'',tokens:['v0x','ax','t','x0','t2pow'],expected:['v0x','ax','t'],template:'<span class="build-formula">v<sub>x</sub> = {{0}} + {{1}}{{2}}</span>'},
+  {id:'b3',type:'build',phase:'Собери формулу',tone:'teal',category:'Равноускоренное движение',title:'Восстановите формулу проекции перемещения при равноускоренном движении',helper:'',tokens:['v0x','t','ax','t2pow','two','x0'],expected:['v0x','t','ax','t2pow','two'],template:'<span class="build-formula">Δx = {{0}}{{1}} + <span class="frac"><span class="top">{{2}}{{3}}</span><span class="bottom">{{4}}</span></span></span>'},
+  {id:'b4',type:'build',phase:'Собери формулу',tone:'teal',category:'Равноускоренное движение',title:'Восстановите уравнение координаты при равноускоренном движении',helper:'',tokens:['x0','v0x','t','ax','t2pow','two','vx'],expected:['x0','v0x','t','ax','t2pow','two'],template:'<span class="build-formula">x = {{0}} + {{1}}{{2}} + <span class="frac"><span class="top">{{3}}{{4}}</span><span class="bottom">{{5}}</span></span></span>'},
+  {id:'b5',type:'build',phase:'Собери формулу',tone:'teal',category:'Общие определения',title:'Восстановите определение проекции перемещения через координаты',helper:'',tokens:['x','x0','v0x','t','dx'],expected:['x','x0'],template:'<span class="build-formula">Δx = {{0}} − {{1}}</span>'}
+];
+
+const tokenHTML = {
+  S:'S',Sall:'S<sub>весь</sub>',dx:'Δx',x:'x',x0:'x<sub>0</sub>',v:'v',vx:'v<sub>x</sub>',v0x:'v<sub>0x</sub>',
+  ax:'a<sub>x</sub>',t:'t',tall:'t<sub>все</sub>',
+  t2pow:'t<sup>2</sup>',two:'2'
+};
+
+const errors = [
+  {
+    id:'e1',type:'error',phase:'Найди ошибку',tone:'orange',category:'Равноускоренное движение',
+    title:'Найдите ошибку в формуле проекции перемещения при равноускоренном движении',
+    helper:'',
+    parts:[
+      {html:'Δx',ok:false},{html:'=',ok:false},{html:'x<sub>0</sub> +',ok:true},
+      {html:'v<sub>0x</sub>t +',ok:false},{html:'<span class="frac"><span class="top">a<sub>x</sub>t<sup>2</sup></span><span class="bottom">2</span></span>',ok:false}
+    ],
+    replacements:[{html:'убрать',key:'remove'},{html:'заменить на x',key:'x'},{html:'заменить на vₓt',key:'vxt'}],
+    replacementAnswer:'remove',
+    reveal:'Правильно: '+eq.displacement
+  },
+  {
+    id:'e2',type:'error',phase:'Найди ошибку',tone:'orange',category:'Равноускоренное движение',
+    title:'Найдите ошибку в уравнении координаты при равноускоренном движении',
+    helper:'',
+    parts:[
+      {html:'x = x<sub>0</sub> +',ok:false},{html:'v<sub>0x</sub>t +',ok:false},
+      {html:'<span class="frac"><span class="top">a<sub>x</sub>t</span><span class="bottom">2</span></span>',ok:true}
+    ],
+    replacements:[{html:'aₓt² / 2',key:'t2'},{html:'aₓt / 2',key:'t1'},{html:'aₓt²',key:'nohalf'}],
+    replacementAnswer:'t2',
+    reveal:'Правильно: '+eq.coordAccel
+  },
+  {
+    id:'e3',type:'error',phase:'Найди ошибку',tone:'orange',category:'Равноускоренное движение',
+    title:'Найдите ошибку в уравнении проекции скорости при равноускоренном движении',
+    helper:'',
+    parts:[
+      {html:'v<sub>x</sub> =',ok:false},{html:'v<sub>0x</sub> +',ok:false},
+      {html:'a<sub>x</sub>t<sup>2</sup>',ok:true}
+    ],
+    replacements:[{html:'aₓt',key:'at'},{html:'aₓ / t',key:'adivt'},{html:'aₓt² / 2',key:'half'}],
+    replacementAnswer:'at',
+    reveal:'Правильно: '+eq.velocity
+  },
+  {
+    id:'e4',type:'error',phase:'Найди ошибку',tone:'orange',category:'Равномерное движение',
+    title:'Найдите ошибку в уравнении координаты при равномерном движении',
+    helper:'',
+    parts:[
+      {html:'x = x<sub>0</sub> +',ok:false},{html:'v<sub>x</sub>t<sup>2</sup>',ok:true}
+    ],
+    replacements:[{html:'vₓt',key:'vxt'},{html:'vₓ / t',key:'vxdivt'},{html:'vₓt² / 2',key:'half'}],
+    replacementAnswer:'vxt',
+    reveal:'Правильно: '+eq.coordUniform
+  }
+];
+
+const situations = [
+  {id:'s1',type:'mcq',phase:'Выбери по смыслу',tone:'blue',category:'Равномерное движение',title:'Тело движется равномерно вдоль оси Ox. Известны x₀, vₓ и t. Нужно определить координату x.',helper:'',answer:'coordUniform',options:['coordUniform','coordAccel','displacement','dxDef']},
+  {id:'s2',type:'mcq',phase:'Выбери по смыслу',tone:'teal',category:'Равноускоренное движение',title:'Тело движется равноускоренно вдоль оси Ox. Известны v₀ₓ, aₓ и t. Нужно определить проекцию скорости vₓ.',helper:'',answer:'velocity',options:['velocity','displacement','coordAccel','dxDef']},
+  {id:'s3',type:'mcq',phase:'Выбери по смыслу',tone:'teal',category:'Равноускоренное движение',title:'Тело движется равноускоренно вдоль оси Ox. Известны v₀ₓ, aₓ и t. Нужно определить проекцию перемещения Δx.',helper:'',answer:'displacement',options:['displacement','coordAccel','velocity','coordUniform']},
+  {id:'s4',type:'mcq',phase:'Выбери по смыслу',tone:'teal',category:'Равноускоренное движение',title:'Тело движется равноускоренно вдоль оси Ox. Известны x₀, v₀ₓ, aₓ и t. Нужно определить координату x.',helper:'',answer:'coordAccel',options:['coordAccel','displacement','coordUniform','velocity']}
+];
+
+const finalBank = [
+  {id:'f1',type:'final',category:'Равномерное движение',title:'Уравнение координаты при равномерном движении',answer:'coordUniform',options:['coordUniform','coordAccel','displacement','dxDef']},
+  {id:'f2',type:'final',category:'Равноускоренное движение',title:'Уравнение проекции скорости при равноускоренном движении',answer:'velocity',options:['velocity','coordUniform','coordAccel','displacement']},
+  {id:'f3',type:'final',category:'Равноускоренное движение',title:'Формула проекции перемещения при равноускоренном движении',answer:'displacement',options:['displacement','coordAccel','coordUniform','velocity']},
+  {id:'f4',type:'final',category:'Равноускоренное движение',title:'Уравнение координаты при равноускоренном движении',answer:'coordAccel',options:['coordAccel','displacement','coordUniform','dxDef']},
+  {id:'f5',type:'final',category:'Общие определения',title:'Определение проекции перемещения через координаты',answer:'dxDef',options:['dxDef','displacement','coordUniform','coordAccel']},
+  {id:'f7',type:'final',category:'Равноускоренное движение',title:'Тело движется равноускоренно. Нужно найти Δx по v₀ₓ, aₓ и t.',answer:'displacement',options:['displacement','coordAccel','velocity','coordUniform']},
+  {id:'f8',type:'final',category:'Равноускоренное движение',title:'Тело движется равноускоренно. Нужно найти x по x₀, v₀ₓ, aₓ и t.',answer:'coordAccel',options:['coordAccel','displacement','coordUniform','velocity']}
+];
+
+const phases = [
+  {name:'Узнай формулу',questions:recognize},
+  {name:'Собери формулу',questions:build},
+  {name:'Найди ошибку',questions:errors},
+  {name:'Выбери по смыслу',questions:situations}
+];
+
+const intro=document.getElementById('intro');
+const shell=document.getElementById('questionShell');
+const content=document.getElementById('questionContent');
+const feedback=document.getElementById('feedback');
+const checkBtn=document.getElementById('checkBtn');
+const nextBtn=document.getElementById('nextBtn');
+const resetBuildBtn=document.getElementById('resetBuildBtn');
+const progressWrap=document.getElementById('progressWrap');
+const progressFill=document.getElementById('progressFill');
+const progressText=document.getElementById('progressText');
+const phaseText=document.getElementById('phaseText');
+const results=document.getElementById('results');
+const repeatErrorsBtn=document.getElementById('repeatErrorsBtn');
+
+let phaseIndex=0;
+let questionIndex=0;
+let current=null;
+let selected=null;
+let attempts=0;
+let resolved=false;
+let buildSlots=[];
+let selectedErrorPart=null;
+let selectedReplacement=null;
+let runErrors=[];
+let score={first:0,solved:0,total:0};
+let categoryStats={};
+let finalQuestions=[];
+let finalMode=false;
+let repeatMode=false;
+let repeatQueue=[];
+let currentWasSolved=false;
+
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function currentPhaseQuestions(){
+  if(repeatMode) return repeatQueue;
+  if(finalMode) return finalQuestions;
+  return phases[phaseIndex].questions;
+}
+
+function totalBaseCount(){return phases.reduce((s,p)=>s+p.questions.length,0)}
+function basePosition(){
+  let n=questionIndex+1;
+  for(let i=0;i<phaseIndex;i++) n+=phases[i].questions.length;
+  return n;
+}
+
+function toneClass(tone){
+  if(tone==='teal') return 'teal';
+  if(tone==='orange') return 'orange';
+  return '';
+}
+
+function recordCategory(q,firstTry,solved){
+  if(!categoryStats[q.category]) categoryStats[q.category]={first:0,solved:0,total:0};
+  const s=categoryStats[q.category];
+  s.total++;
+  if(firstTry) s.first++;
+  if(solved) s.solved++;
+}
+
+function addRunError(q){
+  if(!runErrors.some(x=>x.id===q.id)) runErrors.push(q);
+}
+
+function formulaFor(key){return eq[key] || key}
+
+function renderMCQ(q,isFinal=false){
+  const opts=shuffle(q.options);
+  return `
+    ${isFinal?'<div class="final-shield"><strong>Финальная проверка.</strong> Здесь один ответ и нет подсказок до итогового экрана.</div>':''}
+    <span class="phase-label ${toneClass(q.tone)}">${isFinal?'Финальная проверка':q.phase}</span>
+    <h2 class="prompt">${q.title}</h2>
+    ${q.helper ? `<p class="helper">${q.helper}</p>` : ''}
+    <div class="options" id="options">
+      ${opts.map(k=>`<button class="option" type="button" data-key="${k}">${formulaFor(k)}</button>`).join('')}
+    </div>`;
+}
+
+function renderBuild(q){
+  buildSlots=new Array(q.expected.length).fill(null);
+  const slots=q.expected.map((_,i)=>`<span class="slot empty" data-slot="${i}"></span>`);
+  let templ=q.template;
+  slots.forEach((s,i)=>templ=templ.replace(`{{${i}}}`,s));
+  const tokens=shuffle(q.tokens);
+  return `
+    <span class="phase-label teal">${q.phase}</span>
+    <h2 class="prompt">${q.title}</h2>
+    ${q.helper ? `<p class="helper">${q.helper}</p>` : ''}
+    <div class="build-area" id="buildArea">${templ}</div>
+    <div class="token-bank" id="tokenBank">
+      ${tokens.map((k,i)=>`<button class="token" type="button" data-token="${k}" data-token-id="${q.id}_${i}"><span class="math-piece">${tokenHTML[k]}</span></button>`).join('')}
+    </div>`;
+}
+
+function renderError(q){
+  selectedErrorPart=null;selectedReplacement=null;
+  return `
+    <span class="phase-label orange">${q.phase}</span>
+    <h2 class="prompt">${q.title}</h2>
+    ${q.helper ? `<p class="helper">${q.helper}</p>` : ''}
+    <div class="error-formula">
+      <div class="error-parts" id="errorParts">
+        ${q.parts.map((p,i)=>`<button class="error-part" type="button" data-part="${i}">${p.html}</button>`).join('')}
+      </div>
+    </div>
+    <div class="replacements" id="replacements">
+      <h4>Чем исправить этот фрагмент?</h4>
+      <div class="replacement-row">
+        ${q.replacements.map(r=>`<button class="replacement" type="button" data-replacement="${r.key}">${r.html}</button>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderCurrent(){
+  resolved=false;selected=null;attempts=0;selectedErrorPart=null;selectedReplacement=null;
+  currentWasSolved=false;
+  feedback.className='feedback';feedback.textContent='';
+  nextBtn.classList.add('hidden');
+  checkBtn.classList.remove('hidden');
+  resetBuildBtn.classList.add('hidden');
+
+  const qs=currentPhaseQuestions();
+  current=qs[questionIndex];
+
+  if(current.type==='build'){
+    content.innerHTML=renderBuild(current);
+    resetBuildBtn.classList.remove('hidden');
+    bindBuild();
+  }else if(current.type==='error'){
+    content.innerHTML=renderError(current);
+    bindError();
+  }else{
+    content.innerHTML=renderMCQ(current,current.type==='final');
+    bindMCQ();
+  }
+
+  shell.style.display='block';
+  updateProgress();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function bindMCQ(){
+  content.querySelectorAll('.option').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      if(resolved) return;
+      content.querySelectorAll('.option').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selected=btn.dataset.key;
+    });
+  });
+}
+
+function bindBuild(){
+  const tokens=[...content.querySelectorAll('.token')];
+  const slots=[...content.querySelectorAll('.slot')];
+
+  tokens.forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      if(resolved || btn.classList.contains('used')) return;
+      const empty=buildSlots.findIndex(x=>x===null);
+      if(empty===-1) return;
+      buildSlots[empty]={key:btn.dataset.token,id:btn.dataset.tokenId};
+      btn.classList.add('used');
+      drawBuildSlots();
+    });
+  });
+
+  slots.forEach(slot=>{
+    slot.addEventListener('click',()=>{
+      if(resolved) return;
+      const i=Number(slot.dataset.slot);
+      const item=buildSlots[i];
+      if(!item) return;
+      const token=content.querySelector(`[data-token-id="${item.id}"]`);
+      if(token) token.classList.remove('used');
+      buildSlots[i]=null;
+      drawBuildSlots();
+    });
+  });
+}
+
+function drawBuildSlots(){
+  content.querySelectorAll('.slot').forEach(slot=>{
+    const i=Number(slot.dataset.slot);
+    const item=buildSlots[i];
+    if(item){
+      slot.classList.remove('empty');
+      slot.innerHTML=`<span class="math-piece">${tokenHTML[item.key]}</span>`;
+    }else{
+      slot.classList.add('empty');
+      slot.innerHTML='';
+    }
+  });
+}
+
+function bindError(){
+  content.querySelectorAll('.error-part').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      if(resolved) return;
+      content.querySelectorAll('.error-part').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedErrorPart=Number(btn.dataset.part);
+      selectedReplacement=null;
+      content.querySelectorAll('.replacement').forEach(b=>b.classList.remove('selected'));
+      document.getElementById('replacements').classList.add('show');
+    });
+  });
+  content.querySelectorAll('.replacement').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      if(resolved) return;
+      content.querySelectorAll('.replacement').forEach(b=>b.style.outline='');
+      btn.style.outline='2px solid var(--orange)';
+      selectedReplacement=btn.dataset.replacement;
+    });
+  });
+}
+
+function setFeedback(kind,html){
+  feedback.className='feedback '+kind;
+  feedback.innerHTML=html;
+}
+
+function markMCQVisual(answer){
+  content.querySelectorAll('.option').forEach(btn=>{
+    btn.disabled=true;
+    if(btn.dataset.key===answer) btn.classList.add('correct');
+    if(btn.dataset.key===selected && selected!==answer) btn.classList.add('wrong');
+  });
+}
+
+function handleCorrect(firstTry=true){
+  resolved=true;
+  currentWasSolved=true;
+  score.solved++;
+  if(firstTry) score.first++;
+  setFeedback('good',firstTry?'Верно. Формула выбрана правильно.':'Верно. После проверки вы нашли правильный вариант.');
+  checkBtn.classList.add('hidden');
+  nextBtn.classList.remove('hidden');
+}
+
+function handleWrong(message){
+  attempts++;
+  addRunError(current);
+  if(attempts<2 && !finalMode){
+    setFeedback('bad',message);
+  }else{
+    resolved=true;
+    setFeedback('info',message);
+    checkBtn.classList.add('hidden');
+    nextBtn.classList.remove('hidden');
+  }
+}
+
+function checkCurrent(){
+  if(resolved) return;
+
+  if(current.type==='final'){
+    if(!selected){setFeedback('bad','Сначала выберите формулу.');return}
+    attempts=1;
+    const ok=selected===current.answer;
+    if(ok){currentWasSolved=true;score.solved++;score.first++}else{currentWasSolved=false;addRunError(current)}
+    markMCQVisual(selected); // selected answer is accepted; correctness not revealed
+    content.querySelectorAll('.option').forEach(btn=>{
+      btn.classList.remove('correct','wrong');
+      if(btn.dataset.key===selected) btn.classList.add('selected');
+    });
+    resolved=true;
+    setFeedback('info','Ответ принят. Правильность увидите на итоговом экране.');
+    checkBtn.classList.add('hidden');
+    nextBtn.classList.remove('hidden');
+    return;
+  }
+
+  if(current.type==='mcq'){
+    if(!selected){setFeedback('bad','Сначала выберите одну формулу.');return}
+    const ok=selected===current.answer;
+    if(ok){
+      markMCQVisual(current.answer);
+      handleCorrect(attempts===0);
+    }else{
+      content.querySelectorAll('.option').forEach(btn=>{
+        btn.classList.remove('wrong');
+        if(btn.dataset.key===selected) btn.classList.add('wrong');
+      });
+      if(attempts===0){
+        handleWrong('Ответ неверный. Попробуйте ещё раз.');
+        selected=null;
+      }else{
+        markMCQVisual(current.answer);
+        handleWrong('Правильная формула: '+formulaFor(current.answer));
+      }
+    }
+    return;
+  }
+
+  if(current.type==='build'){
+    if(buildSlots.some(x=>x===null)){setFeedback('bad','Заполните все пропуски.');return}
+    const actual=buildSlots.map(x=>x.key);
+    const ok=current.expected.every((x,i)=>x===actual[i]);
+    if(ok){
+      handleCorrect(attempts===0);
+    }else if(attempts===0){
+      handleWrong('Ответ неверный. Попробуйте ещё раз.');
+    }else{
+      buildSlots=current.expected.map((key,i)=>({key,id:'reveal_'+i}));
+      drawBuildSlots();
+      handleWrong('Правильная структура восстановлена. Обратите внимание на выделенные элементы формулы.');
+    }
+    return;
+  }
+
+  if(current.type==='error'){
+    if(selectedErrorPart===null){setFeedback('bad','Сначала нажмите на фрагмент формулы, который считаете ошибочным.');return}
+    if(selectedReplacement===null){setFeedback('bad','Теперь выберите, чем исправить отмеченный фрагмент.');return}
+    const partOk=current.parts[selectedErrorPart].ok;
+    const replOk=selectedReplacement===current.replacementAnswer;
+    if(partOk && replOk){
+      handleCorrect(attempts===0);
+    }else if(attempts===0){
+      handleWrong('Исправление неверное. Попробуйте ещё раз.');
+    }else{
+      handleWrong(current.reveal);
+    }
+  }
+}
+
+function finalizeQuestionStats(){
+  score.total++;
+  const solved=currentWasSolved;
+  const first=attempts===0 && solved;
+  recordCategory(current,first,solved);
+}
+
+function nextQuestion(){
+  finalizeQuestionStats();
+  const qs=currentPhaseQuestions();
+  questionIndex++;
+  if(questionIndex<qs.length){
+    renderCurrent();
+    return;
+  }
+
+  if(repeatMode){
+    showResults();
+    return;
+  }
+
+  if(finalMode){
+    showResults();
+    return;
+  }
+
+  phaseIndex++;
+  questionIndex=0;
+  if(phaseIndex<phases.length){
+    renderCurrent();
+    return;
+  }
+
+  finalMode=true;
+  finalQuestions=shuffle(finalBank).slice(0,5);
+  questionIndex=0;
+  renderCurrent();
+}
+
+function updateProgress(){
+  progressWrap.style.display='block';
+  let pos,total,label;
+  if(repeatMode){
+    pos=questionIndex+1;total=repeatQueue.length;label='Работа над ошибками';
+  }else if(finalMode){
+    pos=questionIndex+1;total=finalQuestions.length;label='Финальная проверка';
+  }else{
+    pos=basePosition();total=totalBaseCount();label=phases[phaseIndex].name;
+  }
+  progressFill.style.width=((pos/total)*100)+'%';
+  progressText.textContent=`Задание ${pos} из ${total}`;
+  phaseText.textContent=label;
+}
+
+function showResults(){
+  shell.style.display='none';
+  progressWrap.style.display='none';
+  results.style.display='block';
+
+  const finalTotal=score.total;
+  document.getElementById('resultScore').textContent=`${score.solved}/${finalTotal}`;
+  const pct=finalTotal?Math.round(score.solved/finalTotal*100):0;
+  document.getElementById('resultCaption').textContent=
+    pct>=90?'Формулы различаются уверенно.'
+    :pct>=70?'Основа закреплена, но несколько формул стоит повторить.'
+    :'Есть формулы, которые пока смешиваются между собой. Лучше повторить ошибки.';
+
+  const diag=document.getElementById('diag');
+  diag.innerHTML='';
+  ['Равномерное движение','Равноускоренное движение','Общие определения'].forEach(cat=>{
+    const s=categoryStats[cat]||{solved:0,total:0};
+    const div=document.createElement('div');
+    div.className='diag-item';
+    div.innerHTML=`<strong>${cat}</strong><div class="diag-value">${s.solved}/${s.total}</div><div>верно без показа ответа</div>`;
+    diag.appendChild(div);
+  });
+
+  const list=document.getElementById('errorList');
+  list.innerHTML='';
+  if(runErrors.length===0){
+    list.innerHTML='<li style="border-left-color:var(--good);background:var(--good-bg)">Ошибок для повторения нет.</li>';
+    repeatErrorsBtn.classList.add('hidden');
+  }else{
+    runErrors.forEach(q=>{
+      const li=document.createElement('li');
+      li.textContent=q.title;
+      list.appendChild(li);
+    });
+    repeatErrorsBtn.classList.remove('hidden');
+  }
+}
+
+function resetRun(){
+  phaseIndex=0;questionIndex=0;current=null;selected=null;attempts=0;resolved=false;
+  buildSlots=[];selectedErrorPart=null;selectedReplacement=null;currentWasSolved=false;
+  runErrors=[];score={first:0,solved:0,total:0};categoryStats={};
+  finalQuestions=[];finalMode=false;repeatMode=false;repeatQueue=[];
+  results.style.display='none';intro.style.display='none';shell.style.display='block';
+  renderCurrent();
+}
+
+function startRepeat(){
+  const ids=new Set(runErrors.map(q=>q.id));
+  const source=[...recognize,...build,...errors,...situations,...finalBank];
+  repeatQueue=source.filter(q=>ids.has(q.id)).map(q=>{
+    if(q.type==='final') return {...q,type:'mcq',phase:'Повторение',tone:'blue',helper:''};
+    return q;
+  });
+  if(!repeatQueue.length) return;
+  repeatMode=true;finalMode=false;questionIndex=0;
+  runErrors=[];score={first:0,solved:0,total:0};categoryStats={};
+  results.style.display='none';shell.style.display='block';
+  renderCurrent();
+}
+
+document.getElementById('startBtn').addEventListener('click',resetRun);
+checkBtn.addEventListener('click',checkCurrent);
+nextBtn.addEventListener('click',nextQuestion);
+resetBuildBtn.addEventListener('click',()=>{
+  if(!current || current.type!=='build' || resolved) return;
+  buildSlots=new Array(current.expected.length).fill(null);
+  content.querySelectorAll('.token').forEach(b=>b.classList.remove('used'));
+  drawBuildSlots();
+  feedback.className='feedback';feedback.textContent='';
+});
+document.getElementById('restartBtn').addEventListener('click',resetRun);
+repeatErrorsBtn.addEventListener('click',startRepeat);
+</script>
+</body>
+</html>
