@@ -4,936 +4,135 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light">
-  <meta name="theme-color" content="#f8fbff">
+  <title>Физика · Интерактивы</title>
   <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
-  <title>Vector Lab — интерактив по векторам · v5</title>
   <style>
     :root{
-      --ink:#10233f;
       --blue:#173f78;
       --blue2:#2752a3;
+      --teal:#0b7e7d;
+      --ink:#10233f;
+      --muted:#617692;
       --line:#c7d8eb;
       --grid:#e6eef7;
       --paper:#f8fbff;
-      --white:#ffffff;
-      --green:#176b4a;
-      --greenBg:#edf7f0;
-      --red:#d92d20;
-      --redBg:#fff1ef;
-      --amber:#a86400;
-      --amberBg:#fff7e7;
-      --projX:#d47212;
-      --projY:#07866f;
-      --muted:#617692;
-      --shadow:0 18px 55px rgba(28,64,108,.12);
-      --radius:24px;
+      --white:#fff;
+      --shadow:0 16px 45px rgba(28,64,108,.10);
     }
-
     *{box-sizing:border-box}
-    html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:var(--ink)}
+    html,body{margin:0;min-height:100%;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
     body{
       background-color:var(--paper);
-      background-image:
-        linear-gradient(var(--grid) 1px, transparent 1px),
-        linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+      background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
       background-size:26px 26px;
-      overflow-x:hidden;
-      padding-top:var(--tg-content-safe-area-inset-top, 0px);
-      padding-right:var(--tg-content-safe-area-inset-right, 0px);
-      padding-bottom:var(--tg-content-safe-area-inset-bottom, 0px);
-      padding-left:var(--tg-content-safe-area-inset-left, 0px);
+      padding-top:max(12px,var(--tg-content-safe-area-inset-top,0px));
+      padding-right:max(12px,var(--tg-content-safe-area-inset-right,0px));
+      padding-bottom:max(18px,var(--tg-content-safe-area-inset-bottom,0px));
+      padding-left:max(12px,var(--tg-content-safe-area-inset-left,0px));
     }
-
-    button,input{font:inherit}
-    button{touch-action:manipulation}
-    .app{width:min(1120px,calc(100% - 28px));margin:0 auto;padding:22px 0 34px}
-
-    .topbar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;margin-bottom:18px}
-    .brand{font-size:13px;font-weight:850;letter-spacing:.16em;color:var(--blue);text-transform:uppercase}
-    .title{font-size:clamp(25px,3vw,42px);font-weight:900;letter-spacing:-.04em;color:var(--blue);text-align:center;white-space:nowrap}
-    .stepcount{justify-self:end;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums}
-
-    .progress{height:7px;background:#dce7f3;border-radius:99px;overflow:hidden;margin:0 0 20px}
-    .progress>i{display:block;height:100%;width:8%;border-radius:99px;background:linear-gradient(90deg,var(--blue2),#1d8b67);transition:width .5s cubic-bezier(.2,.8,.2,1)}
-
-    .screen{display:none;animation:rise .42s ease both}
-    .screen.active{display:block}
-    @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-
-    .panel{background:rgba(255,255,255,.94);border:1.5px solid #b8cde5;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
-    .panel-head{padding:24px 28px 17px;border-bottom:1px solid #d7e3f0;display:flex;gap:18px;align-items:flex-start}
-    .num{font-size:48px;line-height:.86;font-weight:900;color:#86a5c9;letter-spacing:-.05em}
-    .panel-head h1{font-size:clamp(25px,3vw,38px);line-height:1.03;margin:0 0 8px;color:var(--blue);letter-spacing:-.025em}
-    .panel-head p{font-size:16px;line-height:1.45;margin:0;color:var(--muted);max-width:780px}
-    .content{padding:26px 28px 28px}
-
-    .badge{display:inline-flex;align-items:center;gap:7px;background:#edf3fb;border:1px solid #d1e0f1;color:var(--blue);border-radius:99px;padding:7px 11px;font-size:12px;font-weight:850;letter-spacing:.05em;text-transform:uppercase}
-    .pulse-dot{width:7px;height:7px;border-radius:50%;background:#1d8b67;box-shadow:0 0 0 0 rgba(29,139,103,.34);animation:pulse 1.8s infinite}
-    @keyframes pulse{70%{box-shadow:0 0 0 7px rgba(29,139,103,0)}100%{box-shadow:0 0 0 0 rgba(29,139,103,0)}}
-
-    .formula-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}
-    .formula-card{position:relative;min-height:105px;border:1.5px solid #c8d8ea;border-radius:17px;background:#fff;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:20px 12px;font-family:Georgia,"Times New Roman",serif;font-size:26px;transition:.18s ease;box-shadow:0 5px 15px rgba(25,60,105,.05)}
-    .formula-card:hover{transform:translateY(-2px);border-color:#779bc7;box-shadow:0 9px 22px rgba(25,60,105,.09)}
-    .formula-card.selected{border-color:var(--blue2);box-shadow:0 0 0 3px rgba(39,82,163,.12);background:#f5f8fd}
-    .formula-card.correct-pick{border-color:#5a9f82;background:var(--greenBg)}
-    .formula-card.wrong-pick{border-color:#ec7e74;background:var(--redBg);animation:shake .28s ease}
-    .formula-card.reveal{border-color:#dcaa55;background:var(--amberBg)}
-    .formula-card .flag{position:absolute;right:9px;top:8px;width:25px;height:25px;display:none;align-items:center;justify-content:center;border-radius:50%;font:800 14px/1 system-ui;background:#fff}
-    .formula-card.correct-pick .flag,.formula-card.wrong-pick .flag,.formula-card.reveal .flag{display:flex}
-    .vec{position:relative;display:inline-block;font-style:italic;line-height:1;padding-top:.1em}
-    .vec::before{content:"→";position:absolute;left:50%;top:-.72em;transform:translateX(-50%) scaleX(.78);font-family:Arial,sans-serif;font-size:.74em;font-style:normal;font-weight:500}
-    .abs{white-space:nowrap}
-    sub{font-size:.65em}
-    .unit{font:600 .8em/1.2 Inter,system-ui,sans-serif;margin-left:.08em}
-
-    .actions{display:flex;align-items:center;gap:12px;margin-top:22px;flex-wrap:wrap}
-    .btn{border:0;border-radius:13px;padding:13px 18px;font-weight:850;cursor:pointer;transition:.18s ease}
-    .btn.primary{background:var(--blue);color:white;box-shadow:0 8px 20px rgba(23,63,120,.19)}
-    .btn.primary:hover{background:#0f356b;transform:translateY(-1px)}
-    .btn.secondary{background:#edf3f9;color:var(--blue);border:1px solid #d2dfed}
-    .btn:disabled{opacity:.42;cursor:not-allowed;transform:none!important}
-    .micro{color:var(--muted);font-size:14px}
-    .feedback{display:none;margin-top:16px;padding:13px 15px;border-radius:13px;font-size:14px;font-weight:700;line-height:1.4}
-    .feedback.show{display:block}
-    .feedback.good{background:var(--greenBg);color:var(--green);border:1px solid #c9e4d6}
-    .feedback.bad{background:var(--redBg);color:#aa251d;border:1px solid #f1c8c4}
-
-    .sign-layout{display:grid;grid-template-columns:minmax(330px,1.1fr) minmax(310px,.9fr);gap:25px;align-items:center}
-    .scope{border:1.5px solid #c8d9ea;border-radius:20px;background:#fbfdff;min-height:430px;position:relative;overflow:hidden}
-    .scope::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(circle at 50% 50%,rgba(39,82,163,0) 45%,rgba(39,82,163,.05) 100%)}
-    .roundmark{position:relative;display:inline-flex;z-index:2;margin:14px 15px 2px;font-size:12px;font-weight:850;color:var(--blue);background:#fff;border:1px solid #d7e2ef;border-radius:99px;padding:7px 10px}
-    .scope svg{display:block;position:relative;z-index:1;width:100%;height:430px}
-    .axis{stroke:#172238;stroke-width:2.4}
-    .projection{stroke-width:9;stroke-linecap:round;opacity:0;vector-effect:non-scaling-stroke}
-    .projection.revealed{opacity:1}
-    .projection.proj-x.revealed{stroke:var(--projX)}
-    .projection.proj-y.revealed{stroke:var(--projY)}
-    .projection-guide{stroke:#718399;stroke-width:2;stroke-dasharray:6 6;opacity:0;vector-effect:non-scaling-stroke}
-    .projection-guide.revealed{opacity:.9}
-    .projection-label{display:none;font:italic 800 18px Georgia,"Times New Roman",serif;paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round}
-    .projection-label.show{display:block}
-    .projection-label.x{fill:var(--projX)}
-    .projection-label.y{fill:var(--projY)}
-    .main-vector{stroke:#1e3a8a!important;stroke-width:7;stroke-linecap:round;fill:none;opacity:1!important;vector-effect:non-scaling-stroke;transition:.48s cubic-bezier(.2,.8,.2,1)}
-    .vector-head{fill:#1e3a8a!important;stroke:#1e3a8a;stroke-width:1;opacity:1!important;vector-effect:non-scaling-stroke;transition:.48s cubic-bezier(.2,.8,.2,1)}
-    .tip-label{font:italic 700 25px Georgia,serif;fill:#13223a;transition:.45s}
-    .vector-glyph{stroke:#13223a;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;fill:none}
-    .sign-side h2{font-size:clamp(24px,3vw,34px);letter-spacing:-.03em;color:var(--blue);margin:0 0 8px}
-    .sign-side p{color:var(--muted);line-height:1.5;margin:0 0 18px}
-    .options{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .option{border:1.5px solid #c8d8ea;background:#fff;border-radius:15px;padding:14px 10px;cursor:pointer;color:var(--ink);font:700 20px Georgia,serif;transition:.17s ease}
-    .option:hover{border-color:#6d94c3;background:#f6f9fd}
-    .option.correct{border-color:#5a9f82;background:var(--greenBg);color:var(--green)}
-    .option.incorrect{border-color:#e27c71;background:var(--redBg);color:#b52d24;animation:shake .28s ease}
-    @keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
-    .streak{display:flex;gap:7px;margin:17px 0 3px}
-    .streak i{height:7px;flex:1;border-radius:99px;background:#dce6f1;transition:.25s}
-    .streak i.done{background:#1d8b67}.streak i.missed{background:#d85b50}
-    .lock-note{min-height:43px;margin-top:14px;color:var(--muted);font-size:14px;line-height:1.5;border-radius:13px;transition:.2s ease}
-    .lock-note.checked{padding:13px 14px;border:1px solid #d4e0ec;background:#f7fafd;color:#344860}
-    .lock-note.checked.good{border-color:#c9e4d6;background:var(--greenBg);color:var(--green)}
-    .lock-note.checked.bad{border-color:#f1c8c4;background:var(--redBg);color:#9f2c25}
-    .sign-actions{display:flex;justify-content:flex-end;margin-top:12px}
-    .sign-actions .btn{display:none}
-    .sign-actions .btn.show{display:inline-flex;align-items:center;justify-content:center}
-
-    .boss-layout{display:grid;grid-template-columns:minmax(330px,.92fr) minmax(400px,1.08fr);gap:26px;align-items:stretch}
-    .boss-visual{border-radius:20px;border:1.5px solid #c8d8ea;background:#fbfdff;padding:14px;min-height:420px}
-    .boss-visual svg{width:100%;height:335px;display:block}
-    .boss-visual .roundmark{margin:0 0 2px}
-    .live-values{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .live-values div{background:#edf5ef;border-radius:12px;padding:10px 12px;color:var(--green);font:700 18px Georgia,serif;text-align:center}
-    .mission{background:#f3f7fc;border:1px solid #d9e5f1;border-radius:15px;padding:14px 15px;margin-bottom:14px;line-height:1.45;font-size:15px}
-    .mission strong{color:var(--blue)}
-    .boss-options{display:grid;gap:9px}
-    .boss-option{display:grid;grid-template-columns:28px 1fr;gap:9px;align-items:center;text-align:left;border:1.5px solid #ccdbea;background:#fff;border-radius:14px;padding:12px 13px;cursor:pointer;font-family:Georgia,"Times New Roman",serif;font-size:19px;transition:.17s}
-    .boss-option b{font-family:Inter,system-ui,sans-serif;background:#edf3fa;color:var(--blue);width:26px;height:26px;display:grid;place-items:center;border-radius:50%;font-size:12px}
-    .boss-option:hover{border-color:#779bc7;background:#f8fbff}
-    .boss-option.correct{border-color:#58a07f;background:var(--greenBg);color:var(--green)}
-    .boss-option.incorrect{border-color:#e07970;background:var(--redBg);color:#b22d24;animation:shake .28s ease}
-    .unlock{display:none;margin-top:14px;border-top:1px solid #dbe6f1;padding-top:15px}
-    .unlock.show{display:block;animation:rise .35s ease}
-    .range-row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;color:var(--muted);font-size:13px}
-    input[type=range]{accent-color:var(--blue2);width:100%}
-    .beta-read{font:800 18px Georgia,serif;color:var(--blue);min-width:78px;text-align:right}
-
-    .finish{padding:35px;text-align:center;position:relative;min-height:560px;display:grid;place-items:center;overflow:hidden}
-    .finish-inner{max-width:720px;position:relative;z-index:2}
-    .seal{width:95px;height:95px;margin:0 auto 18px;border-radius:50%;display:grid;place-items:center;background:var(--greenBg);color:var(--green);border:2px solid #9bcab5;font-size:42px;font-weight:900;box-shadow:0 0 0 9px rgba(23,107,74,.06)}
-    .finish h1{font-size:clamp(32px,5vw,56px);letter-spacing:-.045em;color:var(--blue);margin:0 0 10px}
-    .finish .lead{font-size:17px;line-height:1.5;color:var(--muted);margin:0 auto 22px;max-width:620px}
-    .score{font-size:clamp(42px,7vw,76px);font-weight:950;letter-spacing:-.05em;color:var(--ink);line-height:1}
-    .score small{font-size:.33em;color:var(--muted);letter-spacing:0}
-    .outcomes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0 20px;text-align:left}
-    .outcome{border-radius:16px;padding:16px 18px;border:1.5px solid}
-    .outcome.good{background:#eef8f2;border-color:#9bcab5}
-    .outcome.review{background:#fff2f0;border-color:#e7aaa4}
-    .outcome.review.clear{background:#f7faff;border-color:#c8d9ea}
-    .outcome h2{margin:0 0 8px;font-size:18px}
-    .outcome.good h2{color:#176b4a}
-    .outcome.review h2{color:#b52d24}
-    .outcome.review.clear h2{color:var(--blue)}
-    .outcome ul{margin:0;padding-left:19px;font-size:14px;line-height:1.48}
-    .outcome.good ul{color:#245d48}
-    .outcome.review ul{color:#8e3029}
-    .outcome.review.clear ul{color:#334a68}
-    .outcome li+li{margin-top:5px}
-    .review-tip{margin:11px 0 0;padding-top:10px;border-top:1px solid rgba(181,45,36,.18);font-size:13px;line-height:1.45;color:#73312c;font-weight:700}
-    .outcome.review.clear .review-tip{border-top-color:#d6e2ef;color:#334a68}
-    .burst{position:absolute;width:7px;height:7px;border-radius:50%;background:#2e5cac;opacity:.22;animation:float 5s ease-in-out infinite}
-    @keyframes float{50%{transform:translateY(-18px) scale(1.25);opacity:.5}}
-
-    footer{display:flex;justify-content:space-between;gap:12px;margin-top:15px;padding:0 5px;color:#7589a4;font-size:12px}
+    .app{width:min(880px,100%);margin:0 auto;padding:10px 0 26px}
+    .eyebrow{font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:8px}
+    h1{margin:0;color:var(--blue);font-size:clamp(30px,5vw,48px);letter-spacing:-.04em;line-height:1}
+    .lead{margin:12px 0 22px;color:var(--muted);font-size:16px;line-height:1.5;max-width:680px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .card{border:1.5px solid var(--line);border-radius:20px;background:rgba(255,255,255,.96);padding:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:210px}
+    .tag{display:inline-flex;align-self:flex-start;border-radius:999px;padding:6px 10px;background:#edf3fb;color:var(--blue);font-size:12px;font-weight:850;margin-bottom:16px}
+    .card.teal .tag{background:#edf9f8;color:var(--teal)}
+    .card h2{font-size:23px;line-height:1.08;margin:0 0 9px;color:var(--blue);letter-spacing:-.02em}
+    .card.teal h2{color:var(--teal)}
+    .card p{margin:0 0 18px;color:var(--muted);line-height:1.45;font-size:14px}
+    .open{margin-top:auto;border:0;border-radius:12px;padding:12px 15px;background:var(--blue);color:#fff;font-weight:850;cursor:pointer;text-align:center}
+    .card.teal .open{background:var(--teal)}
+    .open:active{transform:translateY(1px)}
+    footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px;color:#7589a4;font-size:12px;padding:0 4px}
     footer a{color:var(--blue);font-weight:800;text-decoration:none}
-
-    @media (max-width:850px){
-      .formula-grid{grid-template-columns:repeat(2,1fr)}
-      .sign-layout,.boss-layout{grid-template-columns:1fr}
-      .scope{min-height:350px}.scope svg{height:350px}
-      .boss-visual{min-height:0}
+    .status{display:none;margin:0 0 14px;padding:11px 13px;border:1px solid #d5e1ee;border-radius:12px;background:#fff;color:var(--muted);font-size:14px}
+    .status.show{display:block}
+    @media(max-width:640px){
+      .grid{grid-template-columns:1fr}
+      .card{min-height:180px}
+      h1{font-size:34px}
     }
-    @media (max-width:560px){
-      .app{width:min(100% - 16px,1120px);padding-top:12px}
-      .topbar{grid-template-columns:1fr auto}.title{grid-column:1/-1;grid-row:2;text-align:left;font-size:29px}.stepcount{grid-column:2}.brand{font-size:11px}
-      .panel-head{padding:19px 17px 14px;gap:10px}.num{font-size:38px}.panel-head h1{font-size:25px}.panel-head p{font-size:14px}
-      .content{padding:18px 16px 19px}
-      .formula-card{min-height:86px;font-size:21px;padding:15px 8px}.formula-grid{gap:8px}
-      .sign-layout{gap:17px}.scope{min-height:315px}.scope svg{height:315px}.options{gap:8px}.option{font-size:17px;padding:12px 7px}
-      .boss-visual svg{height:285px}.boss-option{font-size:16px}
-      .finish{padding:25px 15px;min-height:560px}.outcomes{grid-template-columns:1fr}.score{font-size:58px}
-      footer{font-size:10px}
-    }
-    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
   </style>
 </head>
 <body>
   <main class="app">
-    <div class="topbar">
-      <div class="brand">Физика · ЕГЭ</div>
-      <div class="title">Vector Lab</div>
-      <div class="stepcount" id="stepCount">01 / 03</div>
-    </div>
-    <div class="progress" aria-label="Прогресс"><i id="progressBar"></i></div>
+    <div class="eyebrow">Физика · ЕГЭ</div>
+    <h1>Интерактивы</h1>
+    <p class="lead">Выберите тренажёр. Все задания работают прямо в Telegram и проверяются автоматически.</p>
+    <div class="status" id="status">Открываю выбранный интерактив…</div>
 
-    <section class="screen active" id="screen1">
-      <div class="panel">
-        <div class="panel-head">
-          <div class="num">01</div>
-          <div>
-            <h1>Сбой в записи</h1>
-            <p>В систему подмешали ошибки. Нажми только на физически некорректные записи — все, которые найдёшь.</p>
-          </div>
-        </div>
-        <div class="content">
-          <span class="badge"><i class="pulse-dot"></i> режим проверки</span>
-          <div class="formula-grid" id="formulaGrid">
-            <button class="formula-card" data-bad="1" aria-pressed="false"><span><span class="vec">v</span> = 5 <span class="unit">м/с</span></span><i class="flag"></i></button>
-            <button class="formula-card" data-bad="0" aria-pressed="false"><span><i>v</i> = 5 <span class="unit">м/с</span></span><i class="flag"></i></button>
-            <button class="formula-card" data-bad="1" aria-pressed="false"><span class="abs">|<span class="vec">v</span>| = −5 <span class="unit">м/с</span></span><i class="flag"></i></button>
-            <button class="formula-card" data-bad="0" aria-pressed="false"><span class="abs">|<span class="vec">v</span>| = 5 <span class="unit">м/с</span></span><i class="flag"></i></button>
-            <button class="formula-card" data-bad="1" aria-pressed="false"><span><span class="vec">v</span><sub>x</sub></span><i class="flag"></i></button>
-            <button class="formula-card" data-bad="0" aria-pressed="false"><span><i>v</i><sub>x</sub></span><i class="flag"></i></button>
-            <button class="formula-card" data-bad="1" aria-pressed="false"><span><i>v</i> = −5 <span class="unit">м/с</span></span><i class="flag"></i></button>
-            <button class="formula-card" data-bad="0" aria-pressed="false"><span><i>v</i><sub>x</sub> = −5 <span class="unit">м/с</span></span><i class="flag"></i></button>
-          </div>
-          <div class="feedback" id="notationFeedback" role="status"></div>
-          <div class="actions">
-            <button class="btn primary" id="checkNotation">Проверить выбор</button>
-            <button class="btn secondary" id="resetNotation">Сбросить и перемешать</button>
-            <span class="micro" id="selectedCount">Выбрано: 0</span>
-          </div>
-        </div>
-      </div>
+    <section class="grid" aria-label="Каталог интерактивов">
+      <article class="card">
+        <span class="tag">Векторы</span>
+        <h2>Векторы и проекции</h2>
+        <p>Обозначения, знаки проекций и выбор sin/cos по положению угла.</p>
+        <button class="open" type="button" data-route="vectors">Открыть интерактив</button>
+      </article>
+
+      <article class="card teal">
+        <span class="tag">Кинематика</span>
+        <h2>Формулы равномерного и равноускоренного движения</h2>
+        <p>Узнать формулу, собрать её, найти ошибку и выбрать зависимость по смыслу.</p>
+        <button class="open" type="button" data-route="kinematics-formulas">Открыть интерактив</button>
+      </article>
     </section>
 
-    <section class="screen" id="screen2">
-      <div class="panel">
-        <div class="panel-head">
-          <div class="num">02</div>
-          <div>
-            <h1>Навигация по проекциям</h1>
-            <p>Никаких вычислений. Смотри только на направление вектора и определи знаки его проекций. В серии встретятся скорость и ускорение.</p>
-          </div>
-        </div>
-        <div class="content sign-layout">
-          <div class="scope">
-            <div class="roundmark" id="roundMark">Вектор 1 из 6</div>
-            <svg id="signSvg" viewBox="0 0 360 300" aria-label="Вектор на координатных осях">
-              <defs>
-                <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
-                  <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#d9e6f3" stroke-width="1"/>
-                </pattern>
-                <marker id="axisArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#172238"/>
-                </marker>
-              </defs>
-              <rect x="25" y="20" width="310" height="260" rx="14" fill="url(#grid)"/>
-              <line class="axis" x1="25" y1="150" x2="334" y2="150" marker-end="url(#axisArrow)"/>
-              <line class="axis" x1="180" y1="280" x2="180" y2="21" marker-end="url(#axisArrow)"/>
-              <text x="326" y="140" font-family="Georgia" font-style="italic" font-size="18" fill="#172238">x</text>
-              <text x="190" y="34" font-family="Georgia" font-style="italic" font-size="18" fill="#172238">y</text>
-              <line class="projection proj-x" id="projX" x1="180" y1="150" x2="270" y2="150"/>
-              <line class="projection proj-y" id="projY" x1="180" y1="150" x2="180" y2="65"/>
-              <line class="projection-guide" id="guideX" x1="270" y1="65" x2="270" y2="150"/>
-              <line class="projection-guide" id="guideY" x1="270" y1="65" x2="180" y2="65"/>
-              <line class="main-vector" id="mainVector" x1="180" y1="150" x2="270" y2="65" vector-effect="non-scaling-stroke" style="stroke:#1e3a8a;stroke-width:7;stroke-linecap:round;opacity:1"/>
-              <polygon class="vector-head" id="mainVectorHead" points="270,65 251,69 263,82" vector-effect="non-scaling-stroke" style="fill:#1e3a8a;stroke:#1e3a8a;opacity:1"/>
-              <g id="vectorLabelGroup" transform="translate(279 61)">
-                <text class="tip-label" id="vectorSymbolText" x="0" y="0">v</text>
-                <path class="vector-glyph" d="M1 -25 H19 M14 -29 L19 -25 L14 -21" style="stroke:#13223a;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;fill:none;opacity:1"/>
-              </g>
-              <text class="projection-label x" id="projXLabel" x="225" y="174">vₓ</text>
-              <text class="projection-label y" id="projYLabel" x="190" y="108">vᵧ</text>
-            </svg>
-          </div>
-          <div class="sign-side">
-            <h2>Какая пара верна?</h2>
-            <div class="options" id="signOptions">
-              <button class="option" data-answer="++"></button>
-              <button class="option" data-answer="-+"></button>
-              <button class="option" data-answer="+-"></button>
-              <button class="option" data-answer="0-"></button>
-            </div>
-            <div class="streak" id="streak"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-            <div class="lock-note" id="signNote">Выбери ответ. После проверки вектор останется на месте — можно спокойно разобрать проекции.</div>
-            <div class="sign-actions">
-              <button class="btn primary" id="nextSign">Следующий вектор →</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="screen" id="screen3">
-      <div class="panel">
-        <div class="panel-head">
-          <div class="num">03</div>
-          <div>
-            <h1>Контрольный импульс</h1>
-            <p>Здесь срабатывают сразу два правила: знак проекции и выбор sin/cos по положению угла.</p>
-          </div>
-        </div>
-        <div class="content boss-layout">
-          <div class="boss-visual">
-            <div class="roundmark" id="bossRoundMark">Задание 1 из 2</div>
-            <svg id="bossSvg" viewBox="0 0 360 300" aria-label="Вектор скорости и его проекции">
-              <defs>
-                <pattern id="bossGrid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0L0 0 0 30" fill="none" stroke="#d9e6f3" stroke-width="1"/></pattern>
-                <marker id="bossAxisArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#172238"/></marker>
-              </defs>
-              <rect x="24" y="18" width="312" height="264" rx="14" fill="url(#bossGrid)"/>
-              <line class="axis" x1="24" y1="150" x2="335" y2="150" marker-end="url(#bossAxisArrow)"/>
-              <line class="axis" x1="180" y1="282" x2="180" y2="19" marker-end="url(#bossAxisArrow)"/>
-              <text x="326" y="140" font-family="Georgia" font-style="italic" font-size="18">x</text>
-              <text x="190" y="33" font-family="Georgia" font-style="italic" font-size="18">y</text>
-              <line class="projection proj-x" id="bossPX" x1="180" y1="150" x2="115" y2="150"/>
-              <line class="projection proj-y" id="bossPY" x1="180" y1="150" x2="180" y2="37"/>
-              <line class="projection-guide" id="bossGuideX" x1="115" y1="37" x2="115" y2="150"/>
-              <line class="projection-guide" id="bossGuideY" x1="115" y1="37" x2="180" y2="37"/>
-              <line class="main-vector" id="bossVector" x1="180" y1="150" x2="115" y2="37" vector-effect="non-scaling-stroke" style="stroke:#1e3a8a;stroke-width:7;stroke-linecap:round;opacity:1"/>
-              <polygon class="vector-head" id="bossVectorHead" points="115,37 130,49 113,56" vector-effect="non-scaling-stroke" style="fill:#1e3a8a;stroke:#1e3a8a;opacity:1"/>
-              <path id="betaArc" d="M180 107 A43 43 0 0 0 158.5 112.8" fill="none" stroke="#172238" stroke-width="2"/>
-              <text id="betaLabel" x="150" y="100" font-family="Georgia" font-style="italic" font-size="20">β</text>
-              <g id="bossLabelGroup" transform="translate(88 48)">
-                <text class="tip-label" x="0" y="0">v</text>
-                <path class="vector-glyph" d="M1 -25 H19 M14 -29 L19 -25 L14 -21" style="stroke:#13223a;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;fill:none;opacity:1"/>
-              </g>
-              <text class="projection-label x" id="bossPXLabel" x="145" y="174">vₓ</text>
-              <text class="projection-label y" id="bossPYLabel" x="190" y="94">vᵧ</text>
-            </svg>
-            <div class="live-values">
-              <div id="fxLive"><i>v</i><sub>x</sub> = ?</div>
-              <div id="fyLive"><i>v</i><sub>y</sub> = ?</div>
-            </div>
-          </div>
-          <div>
-            <div class="mission" id="bossMission"><strong>Дано:</strong> модуль скорости <i>v</i> = 10 м/с. Вектор скорости направлен во II четверть. Угол β = 30° задан относительно положительного направления оси <i>Oy</i>.<br><strong>Задача:</strong> выбери правильные формулы для проекций.</div>
-            <div class="boss-options" id="bossOptions">
-              <button class="boss-option" data-right="0"><b>A</b><span></span></button>
-              <button class="boss-option" data-right="0"><b>B</b><span></span></button>
-              <button class="boss-option" data-right="0"><b>C</b><span></span></button>
-              <button class="boss-option" data-right="0"><b>D</b><span></span></button>
-            </div>
-            <div class="feedback" id="bossFeedback" role="status"></div>
-            <div class="unlock" id="unlock">
-              <div class="range-row">
-                <span id="anglePrompt">Проверь себя: меняй β</span>
-                <input id="angleSlider" type="range" min="15" max="75" step="1" value="30" aria-label="Угол бета">
-                <span class="beta-read" id="betaRead">30°</span>
-              </div>
-              <div class="actions"><button class="btn primary" id="bossContinueBtn">Следующее задание →</button></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="screen" id="screen4">
-      <div class="panel finish" id="finishPanel">
-        <i class="burst" style="left:8%;top:20%;animation-delay:.2s"></i><i class="burst" style="left:91%;top:18%;animation-delay:1.3s"></i><i class="burst" style="left:15%;top:82%;animation-delay:2.1s"></i><i class="burst" style="left:85%;top:75%;animation-delay:.8s"></i><i class="burst" style="left:50%;top:7%;animation-delay:1.7s"></i>
-        <div class="finish-inner">
-          <div class="seal">✓</div>
-          <h1 id="finishTitle">Вектор под контролем</h1>
-          <p class="lead" id="finishLead">Ты различаешь вектор, модуль и проекцию и не привязываешь sin/cos к названию оси.</p>
-          <div class="score"><span id="scoreValue">10</span><small> / 10</small></div>
-          <div class="outcomes">
-            <div class="outcome good">
-              <h2>Получилось</h2>
-              <ul id="successList"></ul>
-            </div>
-            <div class="outcome review" id="reviewBox">
-              <h2>Повторить</h2>
-              <ul id="reviewList"></ul>
-              <p class="review-tip" id="reviewTip"></p>
-            </div>
-          </div>
-          <button class="btn secondary" id="restartBtn">Пройти ещё раз</button>
-        </div>
-      </div>
-    </section>
-
-    <footer><span>Кондакова И. С.</span><a href="https://vk.ru/phizege" target="_blank" rel="noopener">vk.ru/phizege</a></footer>
+    <footer>
+      <span>Кондакова И. С.</span>
+      <a href="https://vk.ru/phizege" target="_blank" rel="noopener">vk.ru/phizege</a>
+    </footer>
   </main>
 
   <script>
     (() => {
       'use strict';
 
-      // Telegram Mini App integration. The training logic remains fully local:
-      // no answers, scores or user data are sent anywhere.
       const tg = window.Telegram?.WebApp;
       if (tg) {
         tg.ready();
         tg.expand();
-
-        // Keep Telegram chrome visually consistent with the worksheet.
-        try { tg.setBackgroundColor('#f8fbff'); } catch (_) {}
-        try { tg.setHeaderColor('#f8fbff'); } catch (_) {}
-        if (typeof tg.setBottomBarColor === 'function') {
-          try { tg.setBottomBarColor('#f8fbff'); } catch (_) {}
-        }
+        try {
+          tg.setHeaderColor('#f8fbff');
+          tg.setBackgroundColor('#f8fbff');
+          if (typeof tg.setBottomBarColor === 'function') tg.setBottomBarColor('#f8fbff');
+        } catch (_) {}
       }
 
-      const state = {
-        screen: 1,
-        notationFirstTry: null,
-        signCorrect: 0,
-        signIndex: 0,
-        signLocked: false,
-        bossIndex: 0,
-        bossFirstTry: [null, null]
+      const routes = {
+        'vectors': './vectors/',
+        'kinematics-formulas': './kinematics-formulas/'
       };
 
-      const screens = [1,2,3,4].map(n => document.getElementById('screen' + n));
-      const stepCount = document.getElementById('stepCount');
-      const progressBar = document.getElementById('progressBar');
-
-      function showScreen(n){
-        state.screen = n;
-        screens.forEach((s,i) => s.classList.toggle('active', i === n - 1));
-        stepCount.textContent = n < 4 ? `0${n} / 03` : 'ГОТОВО';
-        progressBar.style.width = n === 1 ? '12%' : n === 2 ? '43%' : n === 3 ? '75%' : '100%';
-        window.scrollTo({top:0,behavior:'smooth'});
+      function getStartParam() {
+        const fromTelegram = tg?.initDataUnsafe?.start_param;
+        if (fromTelegram) return fromTelegram;
+        const params = new URLSearchParams(window.location.search);
+        return params.get('tgWebAppStartParam') || params.get('startapp') || '';
       }
 
-      // Round 1: notation
-      const formulaCards = [...document.querySelectorAll('.formula-card')];
-      const formulaGrid = document.getElementById('formulaGrid');
-      const selectedCount = document.getElementById('selectedCount');
-      const notationFeedback = document.getElementById('notationFeedback');
-      const checkNotation = document.getElementById('checkNotation');
-      const resetNotation = document.getElementById('resetNotation');
-      let notationAttempts = 0;
-
-      function shuffle(arr){
-        const a = [...arr];
-        for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}
-        return a;
+      function buildTarget(routeKey) {
+        const path = routes[routeKey];
+        if (!path) return null;
+        const target = new URL(path, window.location.href);
+        target.search = window.location.search;
+        target.hash = window.location.hash;
+        return target.href;
       }
 
-      function shuffleNotation(){
-        shuffle(formulaCards).forEach(card => formulaGrid.appendChild(card));
+      function go(routeKey, automatic = false) {
+        const target = buildTarget(routeKey);
+        if (!target) return;
+        if (automatic) document.getElementById('status').classList.add('show');
+        window.location.replace(target);
       }
 
-      function clearNotationGrading(){
-        formulaCards.forEach(c => {
-          c.classList.remove('correct-pick','wrong-pick','reveal');
-          c.querySelector('.flag').textContent = '';
-        });
-        notationFeedback.className = 'feedback';
-        notationFeedback.textContent = '';
-      }
-
-      function resetNotationRound(){
-        state.notationFirstTry = null;
-        notationAttempts = 0;
-        checkNotation.dataset.mode = 'check';
-        checkNotation.textContent = 'Проверить выбор';
-        formulaCards.forEach(c => {
-          c.disabled = false;
-          c.classList.remove('selected','correct-pick','wrong-pick','reveal');
-          c.setAttribute('aria-pressed','false');
-          c.querySelector('.flag').textContent = '';
-        });
-        selectedCount.textContent = 'Выбрано: 0';
-        notationFeedback.className = 'feedback';
-        notationFeedback.textContent = '';
-        shuffleNotation();
-      }
-
-      formulaCards.forEach(card => card.addEventListener('click', () => {
-        if(card.disabled) return;
-        clearNotationGrading();
-        card.classList.toggle('selected');
-        card.setAttribute('aria-pressed', String(card.classList.contains('selected')));
-        selectedCount.textContent = `Выбрано: ${formulaCards.filter(c => c.classList.contains('selected')).length}`;
-      }));
-
-      checkNotation.addEventListener('click', () => {
-        if(checkNotation.dataset.mode === 'next'){
-          showScreen(2);
-          return;
-        }
-        notationAttempts++;
-        const selected = formulaCards.filter(c => c.classList.contains('selected'));
-        const exact = formulaCards.every(c => c.classList.contains('selected') === (c.dataset.bad === '1'));
-        if(state.notationFirstTry === null) state.notationFirstTry = exact;
-
-        formulaCards.forEach(c => {
-          c.classList.remove('correct-pick','wrong-pick','reveal');
-          const flag = c.querySelector('.flag');
-          flag.textContent = '';
-          if(c.classList.contains('selected')){
-            const goodSelection = c.dataset.bad === '1';
-            c.classList.add(goodSelection ? 'correct-pick' : 'wrong-pick');
-            flag.textContent = goodSelection ? '✓' : '×';
-          }
-        });
-
-        notationFeedback.className = 'feedback show ' + (exact ? 'good' : 'bad');
-        if(exact){
-          notationFeedback.innerHTML = 'Чисто. <i>v</i> — модуль скорости, а <i>v</i><sub>x</sub> — проекция и может быть отрицательной. Стрелка ставится над обозначением вектора <span class="vec">v</span>, но не над проекцией <i>v</i><sub>x</sub>.';
-          formulaCards.forEach(c => c.disabled = true);
-          checkNotation.textContent = 'К проекциям →';
-          checkNotation.dataset.mode = 'next';
-        }else{
-          const badPicked = selected.filter(c => c.dataset.bad === '0').length;
-          const missed = formulaCards.filter(c => c.dataset.bad === '1' && !c.classList.contains('selected')).length;
-          notationFeedback.textContent = `Есть сбой: лишних отметок — ${badPicked}, пропущенных ошибок — ${missed}. Исправь выбор и проверь ещё раз.`;
-        }
+      document.querySelectorAll('[data-route]').forEach(button => {
+        button.addEventListener('click', () => go(button.dataset.route));
       });
 
-      resetNotation.addEventListener('click', resetNotationRound);
-
-      // Round 2: signs. Velocity and acceleration are mixed every run.
-      const casesBase = [
-        {symbol:'v', name:'скорости', answer:'++', x:275, y:66, note:'Вправо и вверх: vₓ > 0, vᵧ > 0.'},
-        {symbol:'v', name:'скорости', answer:'-+', x:83, y:62, note:'Влево по x — минус; вверх по y — плюс: vₓ < 0, vᵧ > 0.'},
-        {symbol:'a', name:'ускорения', answer:'+-', x:279, y:239, labelX:300, labelY:228, note:'Вправо по x — плюс; вниз по y — минус: aₓ > 0, aᵧ < 0.'},
-        {symbol:'v', name:'скорости', answer:'0-', x:180, y:251, note:'Вектор вертикален: vₓ = 0, vᵧ < 0.'},
-        {symbol:'a', name:'ускорения', answer:'--', x:92, y:233, labelX:58, labelY:220, note:'Влево и вниз: обе проекции ускорения отрицательны.'},
-        {symbol:'v', name:'скорости', answer:'+0', x:289, y:150, note:'Вектор горизонтален вправо: vₓ > 0, vᵧ = 0.'}
-      ];
-      const pairDefs = [
-        {answer:'++', x:'&gt; 0', y:'&gt; 0'},
-        {answer:'-+', x:'&lt; 0', y:'&gt; 0'},
-        {answer:'+-', x:'&gt; 0', y:'&lt; 0'},
-        {answer:'--', x:'&lt; 0', y:'&lt; 0'},
-        {answer:'0+', x:'= 0', y:'&gt; 0'},
-        {answer:'0-', x:'= 0', y:'&lt; 0'},
-        {answer:'+0', x:'&gt; 0', y:'= 0'},
-        {answer:'-0', x:'&lt; 0', y:'= 0'}
-      ];
-      let signCases = [];
-      const options = [...document.querySelectorAll('#signOptions .option')];
-      const streakDots = [...document.querySelectorAll('#streak i')];
-      const mainVector = document.getElementById('mainVector');
-      const mainVectorHead = document.getElementById('mainVectorHead');
-      const projX = document.getElementById('projX');
-      const projY = document.getElementById('projY');
-      const guideX = document.getElementById('guideX');
-      const guideY = document.getElementById('guideY');
-      const projXLabel = document.getElementById('projXLabel');
-      const projYLabel = document.getElementById('projYLabel');
-      const vectorLabelGroup = document.getElementById('vectorLabelGroup');
-      const vectorSymbolText = document.getElementById('vectorSymbolText');
-      const roundMark = document.getElementById('roundMark');
-      const signNote = document.getElementById('signNote');
-      const nextSign = document.getElementById('nextSign');
-
-      function setVectorGeometry(line, head, ox, oy, x, y){
-        const dx = x - ox, dy = y - oy;
-        const len = Math.hypot(dx,dy) || 1;
-        const ux = dx/len, uy = dy/len;
-        const px = -uy, py = ux;
-        const headLength = 18, halfWidth = 8;
-        const bx = x - ux*headLength, by = y - uy*headLength;
-        line.setAttribute('x1',ox.toFixed(1));
-        line.setAttribute('y1',oy.toFixed(1));
-        line.setAttribute('x2',(x-ux*8).toFixed(1));
-        line.setAttribute('y2',(y-uy*8).toFixed(1));
-        head.setAttribute('points',[
-          `${x.toFixed(1)},${y.toFixed(1)}`,
-          `${(bx+px*halfWidth).toFixed(1)},${(by+py*halfWidth).toFixed(1)}`,
-          `${(bx-px*halfWidth).toFixed(1)},${(by-py*halfWidth).toFixed(1)}`
-        ].join(' '));
-      }
-
-      function renderSignOptions(c){
-        const correct = pairDefs.find(p => p.answer === c.answer);
-        const distractors = shuffle(pairDefs.filter(p => p.answer !== c.answer)).slice(0,3);
-        const shown = shuffle([correct,...distractors]);
-        options.forEach((o,i) => {
-          const p = shown[i];
-          o.dataset.answer = p.answer;
-          o.innerHTML = `<i>${c.symbol}</i><sub>x</sub> ${p.x}<br><i>${c.symbol}</i><sub>y</sub> ${p.y}`;
-          o.classList.remove('correct','incorrect');
-          o.disabled = false;
-        });
-      }
-
-      function setupSigns(){
-        signCases = shuffle(casesBase);
-        state.signIndex = 0; state.signCorrect = 0; state.signLocked = false;
-        state.signMistakes = [];
-        streakDots.forEach(d => d.className = '');
-        renderSignCase();
-      }
-
-      function renderSignCase(){
-        const c = signCases[state.signIndex];
-        roundMark.textContent = `Вектор ${state.signIndex + 1} из ${signCases.length} · ${c.name}`;
-        setVectorGeometry(mainVector,mainVectorHead,180,150,c.x,c.y);
-        projX.setAttribute('x2',c.x); projX.setAttribute('y2','150');
-        projY.setAttribute('x1','180'); projY.setAttribute('x2','180'); projY.setAttribute('y1','150'); projY.setAttribute('y2',c.y);
-        guideX.setAttribute('x1',c.x); guideX.setAttribute('y1',c.y); guideX.setAttribute('x2',c.x); guideX.setAttribute('y2','150');
-        guideY.setAttribute('x1',c.x); guideY.setAttribute('y1',c.y); guideY.setAttribute('x2','180'); guideY.setAttribute('y2',c.y);
-        const labelX = c.labelX ?? (c.x < 180 ? c.x - 30 : c.x + 11);
-        const labelY = c.labelY ?? (Math.abs(c.y - 150) < 2 ? 126 : c.y < 150 ? c.y - 7 : c.y + 27);
-        vectorLabelGroup.setAttribute('transform',`translate(${labelX} ${labelY})`);
-        vectorSymbolText.textContent = c.symbol;
-        document.getElementById('signSvg').setAttribute('aria-label',`Вектор ${c.name} на координатных осях`);
-        renderSignOptions(c);
-        projX.classList.remove('revealed');
-        projY.classList.remove('revealed');
-        guideX.classList.remove('revealed');
-        guideY.classList.remove('revealed');
-        projXLabel.classList.remove('show');
-        projYLabel.classList.remove('show');
-        projXLabel.textContent = `${c.symbol}ₓ`;
-        projYLabel.textContent = `${c.symbol}ᵧ`;
-        const xMid = (180 + c.x) / 2;
-        projXLabel.setAttribute('x', (xMid - 9).toFixed(1));
-        projXLabel.setAttribute('y', c.y < 150 ? '174' : '140');
-        const yMid = (150 + c.y) / 2;
-        projYLabel.setAttribute('x', c.x < 180 ? '190' : '151');
-        projYLabel.setAttribute('y', (yMid + 6).toFixed(1));
-        signNote.className = 'lock-note';
-        signNote.textContent = 'Выбери ответ. После проверки вектор останется на месте — можно спокойно разобрать проекции.';
-        nextSign.classList.remove('show');
-        nextSign.textContent = state.signIndex === signCases.length - 1 ? 'К финальному заданию →' : 'Следующий вектор →';
-        state.signLocked = false;
-      }
-
-      function axisExplanation(axis, sign, symbol){
-        const sub = axis === 'x' ? 'x' : 'y';
-        const value = `<i>${symbol}</i><sub>${sub}</sub>`;
-        if(axis === 'x'){
-          if(sign === '+') return `По <i>Ox</i> конец вектора правее начала, поэтому ${value} &gt; 0.`;
-          if(sign === '-') return `По <i>Ox</i> конец вектора левее начала, поэтому ${value} &lt; 0.`;
-          return `Вектор вертикален и перпендикулярен <i>Ox</i>, поэтому ${value} = 0.`;
-        }
-        if(sign === '+') return `По <i>Oy</i> конец вектора выше начала, поэтому ${value} &gt; 0.`;
-        if(sign === '-') return `По <i>Oy</i> конец вектора ниже начала, поэтому ${value} &lt; 0.`;
-        return `Вектор горизонтален и перпендикулярен <i>Oy</i>, поэтому ${value} = 0.`;
-      }
-
-      function explainSignAnswer(c, chosen, good){
-        const parts = [];
-        if(good){
-          parts.push(axisExplanation('x', c.answer[0], c.symbol));
-          parts.push(axisExplanation('y', c.answer[1], c.symbol));
-          return `<strong>Верно.</strong> ${parts.join(' ')}`;
-        }
-        if(chosen[0] !== c.answer[0]) parts.push(axisExplanation('x', c.answer[0], c.symbol));
-        if(chosen[1] !== c.answer[1]) parts.push(axisExplanation('y', c.answer[1], c.symbol));
-        return `<strong>Разберём ошибку.</strong> ${parts.join(' ')} Посмотри на подсвеченные проекции и только потом переходи дальше.`;
-      }
-
-      options.forEach(o => o.addEventListener('click', () => {
-        if(state.signLocked) return;
-        state.signLocked = true;
-        options.forEach(x => x.disabled = true);
-        const c = signCases[state.signIndex];
-        const good = o.dataset.answer === c.answer;
-        o.classList.add(good ? 'correct' : 'incorrect');
-        if(good){state.signCorrect++;streakDots[state.signIndex].classList.add('done')}
-        else{
-          state.signMistakes.push({correct:c.answer, chosen:o.dataset.answer});
-          streakDots[state.signIndex].classList.add('missed');
-          const right = options.find(x => x.dataset.answer === c.answer); right.classList.add('correct');
-        }
-        if(c.answer[0] !== '0'){
-          projX.classList.add('revealed');
-          projXLabel.classList.add('show');
-        }
-        if(c.answer[1] !== '0'){
-          projY.classList.add('revealed');
-          projYLabel.classList.add('show');
-        }
-        if(c.answer[0] !== '0' && c.answer[1] !== '0'){
-          guideX.classList.add('revealed');
-          guideY.classList.add('revealed');
-        }
-        signNote.className = `lock-note checked ${good ? 'good' : 'bad'}`;
-        signNote.innerHTML = explainSignAnswer(c, o.dataset.answer, good);
-        nextSign.classList.add('show');
-      }));
-
-      nextSign.addEventListener('click', () => {
-        if(!state.signLocked) return;
-        state.signIndex++;
-        if(state.signIndex < signCases.length){
-          renderSignCase();
-          return;
-        }
-        showScreen(3);
-        renderBossCase(0);
-      });
-
-      // Round 3: two angle-reference cases. The reference axis deliberately changes.
-      const bossOptions = [...document.querySelectorAll('.boss-option')];
-      const bossFeedback = document.getElementById('bossFeedback');
-      const unlock = document.getElementById('unlock');
-      const slider = document.getElementById('angleSlider');
-      const bossPX = document.getElementById('bossPX');
-      const bossPY = document.getElementById('bossPY');
-      const bossGuideX = document.getElementById('bossGuideX');
-      const bossGuideY = document.getElementById('bossGuideY');
-      const bossPXLabel = document.getElementById('bossPXLabel');
-      const bossPYLabel = document.getElementById('bossPYLabel');
-      const bossMission = document.getElementById('bossMission');
-      const bossRoundMark = document.getElementById('bossRoundMark');
-      const bossContinueBtn = document.getElementById('bossContinueBtn');
-      const anglePrompt = document.getElementById('anglePrompt');
-      const bossCases = [
-        {
-          angleSymbol:'β', angle:30, mode:'from-y-second', place:'II четверть',
-          mission:'<strong>Дано:</strong> модуль скорости <i>v</i> = 10 м/с. Вектор скорости направлен во II четверть. Угол β = 30° задан относительно положительного направления оси <i>Oy</i>.<br><strong>Задача:</strong> выбери правильные формулы для проекций.',
-          options:[
-            {right:false, html:'<i>v</i><sub>x</sub> = <i>v</i> cos β; &nbsp; <i>v</i><sub>y</sub> = <i>v</i> sin β'},
-            {right:true, html:'<i>v</i><sub>x</sub> = −<i>v</i> sin β; &nbsp; <i>v</i><sub>y</sub> = <i>v</i> cos β'},
-            {right:false, html:'<i>v</i><sub>x</sub> = −<i>v</i> cos β; &nbsp; <i>v</i><sub>y</sub> = <i>v</i> sin β'},
-            {right:false, html:'<i>v</i><sub>x</sub> = <i>v</i> sin β; &nbsp; <i>v</i><sub>y</sub> = −<i>v</i> cos β'}
-          ],
-          good:'<b>Верно.</b> Угол β дан от <i>Oy</i>: <i>v</i><sub>y</sub> — прилежащая проекция → cos, <i>v</i><sub>x</sub> — противолежащая → sin. Во II четверти <i>v</i><sub>x</sub> &lt; 0.',
-          bad:'Сначала посмотри на выделенные проекции. Угол β дан от <i>Oy</i>: какая из двух проекций прилежит к этому углу? Именно у неё будет cos.'
-        },
-        {
-          angleSymbol:'α', angle:35, mode:'from-x-fourth', place:'IV четверть',
-          mission:'<strong>Дано:</strong> модуль скорости <i>v</i> = 10 м/с. Вектор скорости направлен в IV четверть. Угол α = 35° задан относительно положительного направления оси <i>Ox</i>.<br><strong>Задача:</strong> выбери правильные формулы для проекций.',
-          options:[
-            {right:true, html:'<i>v</i><sub>x</sub> = <i>v</i> cos α; &nbsp; <i>v</i><sub>y</sub> = −<i>v</i> sin α'},
-            {right:false, html:'<i>v</i><sub>x</sub> = <i>v</i> sin α; &nbsp; <i>v</i><sub>y</sub> = −<i>v</i> cos α'},
-            {right:false, html:'<i>v</i><sub>x</sub> = −<i>v</i> cos α; &nbsp; <i>v</i><sub>y</sub> = <i>v</i> sin α'},
-            {right:false, html:'<i>v</i><sub>x</sub> = <i>v</i> cos α; &nbsp; <i>v</i><sub>y</sub> = <i>v</i> sin α'}
-          ],
-          good:'<b>Верно.</b> Теперь угол α дан от <i>Ox</i>: <i>v</i><sub>x</sub> — прилежащая проекция → cos, <i>v</i><sub>y</sub> — противолежащая → sin. В IV четверти <i>v</i><sub>y</sub> &lt; 0.',
-          bad:'Посмотри на выделенные проекции: угол α дан от <i>Ox</i>. Значит, к углу прилегает горизонтальная проекция <i>v</i><sub>x</sub> — у неё cos.'
-        }
-      ];
-
-      function setBossProjectionHighlight(show){
-        bossPX.classList.toggle('revealed', show);
-        bossPY.classList.toggle('revealed', show);
-        bossGuideX.classList.toggle('revealed', show);
-        bossGuideY.classList.toggle('revealed', show);
-        bossPXLabel.classList.toggle('show', show);
-        bossPYLabel.classList.toggle('show', show);
-      }
-
-      function renderBossCase(index){
-        state.bossIndex = index;
-        const c = bossCases[index];
-        bossRoundMark.textContent = `Задание ${index + 1} из ${bossCases.length} · угол от ${c.mode === 'from-y-second' ? 'Oy' : 'Ox'}`;
-        bossMission.innerHTML = c.mission;
-        bossFeedback.className = 'feedback';
-        bossFeedback.textContent = '';
-        unlock.classList.remove('show');
-        slider.value = String(c.angle);
-        slider.setAttribute('aria-label',`Угол ${c.angleSymbol}`);
-        anglePrompt.textContent = `Проверь себя: меняй ${c.angleSymbol}`;
-        bossContinueBtn.textContent = index === bossCases.length - 1 ? 'Получить разбор' : 'Следующее задание →';
-        const shown = shuffle(c.options);
-        bossOptions.forEach((o,i) => {
-          o.disabled = false;
-          o.classList.remove('correct','incorrect');
-          o.dataset.right = shown[i].right ? '1' : '0';
-          o.querySelector('b').textContent = String.fromCharCode(65+i);
-          o.querySelector('span').innerHTML = shown[i].html;
-        });
-        setBossProjectionHighlight(false);
-        updateBoss(c.angle, false);
-      }
-
-      bossOptions.forEach(o => o.addEventListener('click', () => {
-        if(o.classList.contains('correct')) return;
-        const c = bossCases[state.bossIndex];
-        const good = o.dataset.right === '1';
-        if(state.bossFirstTry[state.bossIndex] === null) state.bossFirstTry[state.bossIndex] = good;
-        bossOptions.forEach(x => x.classList.remove('incorrect'));
-        setBossProjectionHighlight(true);
-        if(good){
-          o.classList.add('correct');
-          bossOptions.forEach(x => x.disabled = true);
-          bossFeedback.className = 'feedback show good';
-          bossFeedback.innerHTML = c.good;
-          unlock.classList.add('show');
-          updateBoss(Number(slider.value), true);
-        }else{
-          o.classList.add('incorrect');
-          bossFeedback.className = 'feedback show bad';
-          bossFeedback.innerHTML = c.bad;
-        }
-      }));
-
-      slider.addEventListener('input', e => updateBoss(Number(e.target.value), true));
-
-      function updateBoss(deg, revealValues = false){
-        const c = bossCases[state.bossIndex];
-        const rad = deg * Math.PI / 180;
-        const L = 116;
-        const ox = 180, oy = 150;
-        const secondQuadrant = c.mode === 'from-y-second';
-        const dx = secondQuadrant ? -L * Math.sin(rad) : L * Math.cos(rad);
-        const dy = secondQuadrant ? -L * Math.cos(rad) : L * Math.sin(rad);
-        const x = ox + dx, y = oy + dy;
-        setVectorGeometry(document.getElementById('bossVector'),document.getElementById('bossVectorHead'),ox,oy,x,y);
-        bossPX.setAttribute('x1',ox);bossPX.setAttribute('y1',oy);bossPX.setAttribute('x2',x.toFixed(1));bossPX.setAttribute('y2',oy);
-        bossPY.setAttribute('x1',ox);bossPY.setAttribute('x2',ox);bossPY.setAttribute('y1',oy);bossPY.setAttribute('y2',y.toFixed(1));
-        bossGuideX.setAttribute('x1',x.toFixed(1));bossGuideX.setAttribute('y1',y.toFixed(1));bossGuideX.setAttribute('x2',x.toFixed(1));bossGuideX.setAttribute('y2',oy);
-        bossGuideY.setAttribute('x1',x.toFixed(1));bossGuideY.setAttribute('y1',y.toFixed(1));bossGuideY.setAttribute('x2',ox);bossGuideY.setAttribute('y2',y.toFixed(1));
-        const labelGX = secondQuadrant ? x - 34 : x + 11;
-        const labelGY = secondQuadrant ? y + 24 : y + 17;
-        document.getElementById('bossLabelGroup').setAttribute('transform',`translate(${labelGX.toFixed(1)} ${labelGY.toFixed(1)})`);
-        bossPXLabel.setAttribute('x',(((ox+x)/2)-10).toFixed(1));
-        bossPXLabel.setAttribute('y',secondQuadrant ? '174' : '139');
-        bossPYLabel.setAttribute('x',secondQuadrant ? '190' : '151');
-        bossPYLabel.setAttribute('y',(((oy+y)/2)+6).toFixed(1));
-        document.getElementById('betaRead').textContent = `${c.angleSymbol} = ${deg}°`;
-        document.getElementById('betaLabel').textContent = c.angleSymbol;
-        document.getElementById('bossSvg').setAttribute('aria-label',`Вектор скорости в ${c.place}, угол ${c.angleSymbol}, проекции на Ox и Oy`);
-        if(revealValues){
-          const fx = secondQuadrant ? -10*Math.sin(rad) : 10*Math.cos(rad);
-          const fy = secondQuadrant ? 10*Math.cos(rad) : -10*Math.sin(rad);
-          document.getElementById('fxLive').innerHTML = `<i>v</i><sub>x</sub> = ${fx.toFixed(1).replace('.',',')} м/с`;
-          document.getElementById('fyLive').innerHTML = `<i>v</i><sub>y</sub> = ${fy.toFixed(1).replace('.',',')} м/с`;
-        }else{
-          document.getElementById('fxLive').innerHTML = '<i>v</i><sub>x</sub> = ?';
-          document.getElementById('fyLive').innerHTML = '<i>v</i><sub>y</sub> = ?';
-        }
-
-        const r = 43;
-        let sx, sy, ex, ey, sweep, tx, ty;
-        if(secondQuadrant){
-          sx = ox; sy = oy-r;
-          ex = ox-r*Math.sin(rad); ey = oy-r*Math.cos(rad); sweep = 0;
-          tx = ox-52*Math.sin(rad/2)-4; ty = oy-52*Math.cos(rad/2);
-        }else{
-          sx = ox+r; sy = oy;
-          ex = ox+r*Math.cos(rad); ey = oy+r*Math.sin(rad); sweep = 1;
-          tx = ox+47*Math.cos(rad/2); ty = oy+47*Math.sin(rad/2)+5;
-        }
-        document.getElementById('betaArc').setAttribute('d',`M ${sx.toFixed(1)} ${sy.toFixed(1)} A ${r} ${r} 0 0 ${sweep} ${ex.toFixed(1)} ${ey.toFixed(1)}`);
-        document.getElementById('betaLabel').setAttribute('x',tx.toFixed(1));
-        document.getElementById('betaLabel').setAttribute('y',ty.toFixed(1));
-      }
-
-      bossContinueBtn.addEventListener('click', () => {
-        if(state.bossIndex < bossCases.length - 1){
-          renderBossCase(state.bossIndex + 1);
-        }else{
-          finish();
-        }
-      });
-
-      function finish(){
-        const notationPoints = state.notationFirstTry ? 2 : 1;
-        const signPoints = Math.round(state.signCorrect * 4 / signCases.length); // scaled to 0..4
-        const bossPoints = state.bossFirstTry.reduce((sum,good) => sum + (good ? 2 : 1), 0);
-        const total = notationPoints + signPoints + bossPoints;
-        document.getElementById('scoreValue').textContent = total;
-        const successes = [];
-        const reviews = [];
-        if(state.notationFirstTry){
-          successes.push('Различаешь вектор <span class="vec">v</span>, модуль <i>v</i> и проекцию <i>v</i><sub>x</sub>.');
-        } else {
-          reviews.push('Обозначения вектора, модуля и проекции.');
-        }
-
-        const zeroMiss = state.signMistakes.some(m => m.correct.includes('0'));
-        const axisXMiss = state.signMistakes.some(m => m.correct[0] !== m.chosen[0]);
-        const axisYMiss = state.signMistakes.some(m => m.correct[1] !== m.chosen[1]);
-        if(state.signCorrect === signCases.length){
-          successes.push('Верно определяешь знаки проекций: 6 из 6.');
-        } else {
-          reviews.push(zeroMiss ? 'Знаки и нулевые проекции на <i>Ox</i> и <i>Oy</i>.' : 'Знаки проекций на <i>Ox</i> и <i>Oy</i>.');
-        }
-
-        if(state.bossFirstTry.every(Boolean)){
-          successes.push('Верно выбираешь sin/cos и при угле от <i>Oy</i>, и при угле от <i>Ox</i>.');
-        } else {
-          if(state.bossFirstTry[0]) successes.push('Верно выбираешь sin/cos, когда угол задан от <i>Oy</i>.');
-          if(state.bossFirstTry[1]) successes.push('Верно выбираешь sin/cos, когда угол задан от <i>Ox</i>.');
-          if(!state.bossFirstTry[0]) reviews.push('Выбор sin/cos, когда угол задан от оси <i>Oy</i>.');
-          if(!state.bossFirstTry[1]) reviews.push('Выбор sin/cos, когда угол задан от оси <i>Ox</i>.');
-        }
-
-        if(successes.length === 0){
-          successes.push('Ошибки исправлены по ходу прохождения.');
-        }
-        document.getElementById('successList').innerHTML = successes.map(r => `<li>${r}</li>`).join('');
-
-        const reviewBox = document.getElementById('reviewBox');
-        let tip = '';
-        if(reviews.length === 0){
-          reviewBox.classList.add('clear');
-          reviews.push('Ничего — основные правила усвоены.');
-          tip = 'Можно переходить к задачам на вычисление проекций.';
-        } else {
-          reviewBox.classList.remove('clear');
-          if(!state.notationFirstTry){
-            tip = 'Сначала закрепи: <span class="vec">v</span> — вектор, <i>v</i> — модуль, <i>v</i><sub>x</sub> — проекция.';
-          } else if(state.signCorrect < signCases.length){
-            tip = zeroMiss
-              ? 'Для каждой оси отдельно определи знак; если вектор перпендикулярен оси, проекция на неё равна нулю.'
-              : `Для каждой оси определяй знак отдельно${axisXMiss && !axisYMiss ? ': особенно проверь направление по Ox.' : !axisXMiss && axisYMiss ? ': особенно проверь направление по Oy.' : '.'}`;
-          } else if(!state.bossFirstTry[0] || !state.bossFirstTry[1]) {
-            if(!state.bossFirstTry[0] && state.bossFirstTry[1]){
-              tip = 'Если угол задан от <i>Oy</i>, к нему прилегает <i>v</i><sub>y</sub> → cos, а <i>v</i><sub>x</sub> → sin. Знак определи отдельно.';
-            }else if(state.bossFirstTry[0] && !state.bossFirstTry[1]){
-              tip = 'Если угол задан от <i>Ox</i>, к нему прилегает <i>v</i><sub>x</sub> → cos, а <i>v</i><sub>y</sub> → sin. Знак определи отдельно.';
-            }else{
-              tip = 'Повтори одно правило: cos относится к проекции, прилежащей к заданному углу; sin — к противолежащей. Знак определяется отдельно.';
-            }
-          }
-        }
-        document.getElementById('reviewList').innerHTML = reviews.map(r => `<li>${r}</li>`).join('');
-        document.getElementById('reviewTip').innerHTML = tip;
-
-        let title, lead;
-        if(total === 10){title='Вектор под контролем';lead='Ты различаешь вектор, модуль и проекцию, читаешь знаки по направлению и не привязываешь sin/cos к названию оси.'}
-        else if(total >= 8){title='Почти безошибочно';lead='База уверенная. Ниже указан только тот блок, который действительно стоит повторить.'}
-        else{title='Есть что закрепить';lead='Не надо повторять всю памятку. Ниже — конкретные правила, на которых появились ошибки.'}
-        document.getElementById('finishTitle').textContent = title;
-        document.getElementById('finishLead').textContent = lead;
-        showScreen(4);
-      }
-
-      document.getElementById('restartBtn').addEventListener('click', () => location.reload());
-      resetNotationRound();
-      setupSigns();
-      renderBossCase(0);
+      const startParam = getStartParam();
+      if (routes[startParam]) go(startParam, true);
     })();
   </script>
 </body>
