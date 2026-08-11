@@ -1,11 +1,8 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="color-scheme" content="light">
-<meta name="theme-color" content="#eef3fb">
-<script src="https://telegram.org/js/telegram-web-app.js?63"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Формулы кинематики — интерактивный тренажёр</title>
 <style>
 :root{
@@ -28,16 +25,8 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--ink)}
-body{
-  font-family:Arial,Helvetica,sans-serif;
-  min-height:var(--tg-viewport-stable-height,100vh);
-  padding-top:var(--tg-content-safe-area-inset-top,0px);
-  padding-right:var(--tg-content-safe-area-inset-right,0px);
-  padding-bottom:var(--tg-content-safe-area-inset-bottom,0px);
-  padding-left:var(--tg-content-safe-area-inset-left,0px);
-  overflow-x:hidden;
-}
-button{font:inherit;touch-action:manipulation}
+body{font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+button{font:inherit}
 .app{
   width:min(980px,calc(100% - 24px));
   margin:18px auto;
@@ -71,7 +60,7 @@ button{font:inherit;touch-action:manipulation}
 }
 .intro-lead h2{margin:0 0 10px;color:var(--blue2);font-size:27px}
 .intro-lead p{margin:7px 0;font-size:18px;line-height:1.4}
-.phase-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.phase-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .phase-card{border:1.5px solid var(--line);border-radius:14px;padding:16px;background:#fff}
 .phase-card strong{display:block;color:var(--blue2);font-size:18px;margin-bottom:5px}
 .phase-card:nth-child(2) strong,.phase-card:nth-child(4) strong{color:var(--teal2)}
@@ -245,6 +234,81 @@ button{font:inherit;touch-action:manipulation}
 }
 .footer strong{color:var(--blue2)}
 .hidden{display:none!important}
+
+/* Режим тестирования: минимум отвлекающих элементов */
+.utility-row{
+  margin-top:14px;display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap
+}
+.utility-btn{
+  border:1.3px solid var(--line);background:#fff;color:var(--blue2);border-radius:9px;
+  padding:7px 10px;font-size:13px;font-weight:800;cursor:pointer
+}
+.utility-btn:hover{border-color:var(--blue)}
+.timer-display{
+  min-width:66px;text-align:center;font-variant-numeric:tabular-nums;font-weight:900;
+  color:var(--blue2);background:var(--soft-blue);border:1px solid #c7d8ff;border-radius:9px;padding:7px 9px
+}
+.app.testing .header{padding:12px 18px 11px}
+.app.testing .brand{display:none}
+.app.testing .utility-row{margin-top:0}
+.app.testing .progress-wrap{margin-top:9px}
+.app.testing .main{padding-top:18px}
+.app.testing .footer{display:none}
+.question-shell{
+  display:none;border:2px solid #b9c8e2;border-radius:16px;padding:20px;background:#fff
+}
+.question-focus{
+  border-left:6px solid var(--blue);background:var(--soft-blue);border-radius:10px;
+  padding:13px 15px 14px;margin-bottom:18px
+}
+.question-kicker{
+  color:var(--blue2);font-size:12px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px
+}
+.question-focus .prompt{margin:0;color:#17213a}
+.question-shell[data-question-tone="teal"] .question-focus{border-left-color:var(--teal);background:var(--soft-teal)}
+.question-shell[data-question-tone="teal"] .question-kicker{color:var(--teal2)}
+.question-shell[data-question-tone="orange"] .question-focus{border-left-color:var(--orange);background:var(--soft-orange)}
+.question-shell[data-question-tone="orange"] .question-kicker{color:#b84e00}
+
+/* Спокойная тёмная тема: без декоративного фона */
+[data-theme="dark"]{
+  --blue:#78a0ff;--blue2:#9ab6ff;--teal:#42ccc5;--teal2:#69ddd6;--orange:#ff9b55;
+  --ink:#edf3ff;--muted:#a8b4c9;--line:#34445f;--bg:#0b1220;
+  --good:#55d39c;--good-bg:#102b23;--bad:#ff8078;--bad-bg:#321a1a;
+  --soft-blue:#152443;--soft-teal:#102d2d;--soft-orange:#332316
+}
+[data-theme="dark"] .app,
+[data-theme="dark"] .header,
+[data-theme="dark"] .phase-card,
+[data-theme="dark"] .question-shell,
+[data-theme="dark"] .option,
+[data-theme="dark"] .token,
+[data-theme="dark"] .replacement{background:#111b2b;color:var(--ink)}
+[data-theme="dark"] .header,[data-theme="dark"] .footer{border-color:#2b3952}
+[data-theme="dark"] .brand-sub,[data-theme="dark"] .result-caption,[data-theme="dark"] .footer{color:#a8b4c9}
+[data-theme="dark"] .phase-card p,[data-theme="dark"] tbody td:nth-child(2){color:#c7d1e3}
+[data-theme="dark"] .intro-lead{background:#132342}
+[data-theme="dark"] .prompt,[data-theme="dark"] .question-focus .prompt,[data-theme="dark"] .diag-item strong{color:#f1f5ff}
+[data-theme="dark"] .formula,
+[data-theme="dark"] .build-formula,
+[data-theme="dark"] .error-part,
+[data-theme="dark"] .token .math-piece{color:#f6f1e7}
+[data-theme="dark"] .option{border-color:#455675}
+[data-theme="dark"] .option.selected{background:#1a315e;border-color:var(--blue)}
+[data-theme="dark"] .build-area{background:#102d2d}
+[data-theme="dark"] .slot{color:#a9c2ff}
+[data-theme="dark"] .error-formula{background:#332316}
+[data-theme="dark"] .error-part:hover,[data-theme="dark"] .error-part.selected{background:#4b2e1c}
+[data-theme="dark"] .replacements h4{color:#ffc18f}
+[data-theme="dark"] .replacement:hover{background:#2e251e}
+[data-theme="dark"] .diag-item{border-color:#34445f}
+[data-theme="dark"] .utility-btn{background:#172235;color:#d9e5ff;border-color:#3b4b67}
+[data-theme="dark"] .timer-display{background:#152443;border-color:#34518c;color:#dce7ff}
+[data-theme="dark"] .progress-line{background:#27344a}
+[data-theme="dark"] .ghost{background:#1b293d;color:#dce7ff}
+[data-theme="dark"] .question-shell{border-color:#354867}
+[data-theme="dark"] .feedback.info{color:#c8d8ff;border-color:#385284}
+
 @media(max-width:680px){
   .app{width:min(100% - 12px,980px);margin:6px auto;border-width:2px;border-radius:15px}
   .header,.main{padding:17px 14px}
@@ -254,6 +318,11 @@ button{font:inherit;touch-action:manipulation}
   .action-row .right{margin:10px 0 0;display:grid;grid-template-columns:1fr}
   .action-row>.ghost{width:100%}
   .primary,.secondary,.ghost{width:100%}
+  .utility-btn{width:auto;padding:7px 9px}
+  .utility-row{justify-content:flex-start}
+  .app.testing .utility-row{justify-content:flex-start}
+  .question-shell{padding:15px 12px}
+  .question-focus{padding:11px 12px}
   .error-parts{gap:0}
   .formula{white-space:normal}
 }
@@ -269,6 +338,13 @@ button{font:inherit;touch-action:manipulation}
       </div>
       <a class="header-link" href="https://vk.ru/phizege" target="_blank" rel="noopener">vk.ru/phizege</a>
     </div>
+    <div class="utility-row" id="utilityRow">
+      <button class="utility-btn" id="themeBtn" type="button">ТЁМНАЯ ТЕМА</button>
+      <button class="utility-btn" id="timerToggleBtn" type="button">ТАЙМЕР: ВЫКЛ</button>
+      <span class="timer-display hidden" id="timerDisplay">00:00</span>
+      <button class="utility-btn timer-extra hidden" id="timerPauseBtn" type="button">ПАУЗА</button>
+      <button class="utility-btn timer-extra hidden" id="timerResetBtn" type="button">СБРОС</button>
+    </div>
     <div class="progress-wrap" id="progressWrap">
       <div class="progress-line"><div class="progress-fill" id="progressFill"></div></div>
       <div class="progress-meta"><span id="progressText">Задание 1</span><span id="phaseText"></span></div>
@@ -279,13 +355,12 @@ button{font:inherit;touch-action:manipulation}
     <section class="intro" id="intro">
       <div class="intro-lead">
         <h2>Закрепляем только формулы</h2>
-        <p>Здесь нет численных расчётов. Нужно узнавать формулы, восстанавливать их структуру, находить ошибки и выбирать нужную зависимость по смыслу.</p>
+        <p>Здесь нет численных расчётов. Нужно узнавать формулы, восстанавливать их структуру и находить ошибки.</p>
       </div>
       <div class="phase-grid">
         <div class="phase-card"><strong>1. Узнай формулу</strong><p>Выберите нужную зависимость среди похожих формул.</p></div>
-        <div class="phase-card"><strong>2. Собери формулу</strong><p>Заполните пропуски, нажимая на обозначения.</p></div>
+        <div class="phase-card"><strong>2. Собери формулу</strong><p>Восстановите формулу из обозначений.</p></div>
         <div class="phase-card"><strong>3. Найди ошибку</strong><p>Укажите неверный фрагмент и исправьте его.</p></div>
-        <div class="phase-card"><strong>4. Выбери по смыслу</strong><p>Определите формулу по известным величинам и тому, что нужно найти.</p></div>
       </div>
       <div class="controls"><button class="primary" id="startBtn" type="button">НАЧАТЬ ТРЕНИРОВКУ</button></div>
     </section>
@@ -321,20 +396,6 @@ button{font:inherit;touch-action:manipulation}
 </div>
 
 <script>
-// Telegram Mini App integration. The trainer remains fully local:
-// answers, progress and results are not sent anywhere.
-const tg = window.Telegram?.WebApp;
-if (tg) {
-  tg.ready();
-  tg.expand();
-
-  try { tg.setBackgroundColor('#eef3fb'); } catch (_) {}
-  try { tg.setHeaderColor('#eef3fb'); } catch (_) {}
-  if (typeof tg.setBottomBarColor === 'function') {
-    try { tg.setBottomBarColor('#eef3fb'); } catch (_) {}
-  }
-}
-
 const F = {
   S:'<span class="formula">S</span>',
   Sall:'<span class="formula">S<sub>весь</sub></span>',
@@ -434,30 +495,14 @@ const errors = [
   }
 ];
 
-const situations = [
-  {id:'s1',type:'mcq',phase:'Выбери по смыслу',tone:'blue',category:'Равномерное движение',title:'Тело движется равномерно вдоль оси Ox. Известны x₀, vₓ и t. Нужно определить координату x.',helper:'',answer:'coordUniform',options:['coordUniform','coordAccel','displacement','dxDef']},
-  {id:'s2',type:'mcq',phase:'Выбери по смыслу',tone:'teal',category:'Равноускоренное движение',title:'Тело движется равноускоренно вдоль оси Ox. Известны v₀ₓ, aₓ и t. Нужно определить проекцию скорости vₓ.',helper:'',answer:'velocity',options:['velocity','displacement','coordAccel','dxDef']},
-  {id:'s3',type:'mcq',phase:'Выбери по смыслу',tone:'teal',category:'Равноускоренное движение',title:'Тело движется равноускоренно вдоль оси Ox. Известны v₀ₓ, aₓ и t. Нужно определить проекцию перемещения Δx.',helper:'',answer:'displacement',options:['displacement','coordAccel','velocity','coordUniform']},
-  {id:'s4',type:'mcq',phase:'Выбери по смыслу',tone:'teal',category:'Равноускоренное движение',title:'Тело движется равноускоренно вдоль оси Ox. Известны x₀, v₀ₓ, aₓ и t. Нужно определить координату x.',helper:'',answer:'coordAccel',options:['coordAccel','displacement','coordUniform','velocity']}
-];
-
-const finalBank = [
-  {id:'f1',type:'final',category:'Равномерное движение',title:'Уравнение координаты при равномерном движении',answer:'coordUniform',options:['coordUniform','coordAccel','displacement','dxDef']},
-  {id:'f2',type:'final',category:'Равноускоренное движение',title:'Уравнение проекции скорости при равноускоренном движении',answer:'velocity',options:['velocity','coordUniform','coordAccel','displacement']},
-  {id:'f3',type:'final',category:'Равноускоренное движение',title:'Формула проекции перемещения при равноускоренном движении',answer:'displacement',options:['displacement','coordAccel','coordUniform','velocity']},
-  {id:'f4',type:'final',category:'Равноускоренное движение',title:'Уравнение координаты при равноускоренном движении',answer:'coordAccel',options:['coordAccel','displacement','coordUniform','dxDef']},
-  {id:'f5',type:'final',category:'Общие определения',title:'Определение проекции перемещения через координаты',answer:'dxDef',options:['dxDef','displacement','coordUniform','coordAccel']},
-  {id:'f7',type:'final',category:'Равноускоренное движение',title:'Тело движется равноускоренно. Нужно найти Δx по v₀ₓ, aₓ и t.',answer:'displacement',options:['displacement','coordAccel','velocity','coordUniform']},
-  {id:'f8',type:'final',category:'Равноускоренное движение',title:'Тело движется равноускоренно. Нужно найти x по x₀, v₀ₓ, aₓ и t.',answer:'coordAccel',options:['coordAccel','displacement','coordUniform','velocity']}
-];
 
 const phases = [
   {name:'Узнай формулу',questions:recognize},
   {name:'Собери формулу',questions:build},
-  {name:'Найди ошибку',questions:errors},
-  {name:'Выбери по смыслу',questions:situations}
+  {name:'Найди ошибку',questions:errors}
 ];
 
+const app=document.querySelector('.app');
 const intro=document.getElementById('intro');
 const shell=document.getElementById('questionShell');
 const content=document.getElementById('questionContent');
@@ -471,6 +516,11 @@ const progressText=document.getElementById('progressText');
 const phaseText=document.getElementById('phaseText');
 const results=document.getElementById('results');
 const repeatErrorsBtn=document.getElementById('repeatErrorsBtn');
+const themeBtn=document.getElementById('themeBtn');
+const timerToggleBtn=document.getElementById('timerToggleBtn');
+const timerDisplay=document.getElementById('timerDisplay');
+const timerPauseBtn=document.getElementById('timerPauseBtn');
+const timerResetBtn=document.getElementById('timerResetBtn');
 
 let phaseIndex=0;
 let questionIndex=0;
@@ -484,11 +534,14 @@ let selectedReplacement=null;
 let runErrors=[];
 let score={first:0,solved:0,total:0};
 let categoryStats={};
-let finalQuestions=[];
-let finalMode=false;
 let repeatMode=false;
 let repeatQueue=[];
 let currentWasSolved=false;
+let testActive=false;
+let timerEnabled=false;
+let timerRunning=false;
+let timerSeconds=0;
+let timerInterval=null;
 
 function shuffle(arr){
   const a=[...arr];
@@ -501,7 +554,6 @@ function shuffle(arr){
 
 function currentPhaseQuestions(){
   if(repeatMode) return repeatQueue;
-  if(finalMode) return finalQuestions;
   return phases[phaseIndex].questions;
 }
 
@@ -532,12 +584,13 @@ function addRunError(q){
 
 function formulaFor(key){return eq[key] || key}
 
-function renderMCQ(q,isFinal=false){
+function renderMCQ(q){
   const opts=shuffle(q.options);
   return `
-    ${isFinal?'<div class="final-shield"><strong>Финальная проверка.</strong> Здесь один ответ и нет подсказок до итогового экрана.</div>':''}
-    <span class="phase-label ${toneClass(q.tone)}">${isFinal?'Финальная проверка':q.phase}</span>
-    <h2 class="prompt">${q.title}</h2>
+    <div class="question-focus">
+      <div class="question-kicker">ВОПРОС</div>
+      <h2 class="prompt">${q.title}</h2>
+    </div>
     ${q.helper ? `<p class="helper">${q.helper}</p>` : ''}
     <div class="options" id="options">
       ${opts.map(k=>`<button class="option" type="button" data-key="${k}">${formulaFor(k)}</button>`).join('')}
@@ -551,8 +604,10 @@ function renderBuild(q){
   slots.forEach((s,i)=>templ=templ.replace(`{{${i}}}`,s));
   const tokens=shuffle(q.tokens);
   return `
-    <span class="phase-label teal">${q.phase}</span>
-    <h2 class="prompt">${q.title}</h2>
+    <div class="question-focus">
+      <div class="question-kicker">ВОПРОС</div>
+      <h2 class="prompt">${q.title}</h2>
+    </div>
     ${q.helper ? `<p class="helper">${q.helper}</p>` : ''}
     <div class="build-area" id="buildArea">${templ}</div>
     <div class="token-bank" id="tokenBank">
@@ -563,8 +618,10 @@ function renderBuild(q){
 function renderError(q){
   selectedErrorPart=null;selectedReplacement=null;
   return `
-    <span class="phase-label orange">${q.phase}</span>
-    <h2 class="prompt">${q.title}</h2>
+    <div class="question-focus">
+      <div class="question-kicker">ВОПРОС</div>
+      <h2 class="prompt">${q.title}</h2>
+    </div>
     ${q.helper ? `<p class="helper">${q.helper}</p>` : ''}
     <div class="error-formula">
       <div class="error-parts" id="errorParts">
@@ -598,10 +655,11 @@ function renderCurrent(){
     content.innerHTML=renderError(current);
     bindError();
   }else{
-    content.innerHTML=renderMCQ(current,current.type==='final');
+    content.innerHTML=renderMCQ(current);
     bindMCQ();
   }
 
+  shell.dataset.questionTone=current.tone || 'blue';
   shell.style.display='block';
   updateProgress();
   window.scrollTo({top:0,behavior:'smooth'});
@@ -709,7 +767,7 @@ function handleCorrect(firstTry=true){
 function handleWrong(message){
   attempts++;
   addRunError(current);
-  if(attempts<2 && !finalMode){
+  if(attempts<2){
     setFeedback('bad',message);
   }else{
     resolved=true;
@@ -721,23 +779,6 @@ function handleWrong(message){
 
 function checkCurrent(){
   if(resolved) return;
-
-  if(current.type==='final'){
-    if(!selected){setFeedback('bad','Сначала выберите формулу.');return}
-    attempts=1;
-    const ok=selected===current.answer;
-    if(ok){currentWasSolved=true;score.solved++;score.first++}else{currentWasSolved=false;addRunError(current)}
-    markMCQVisual(selected); // selected answer is accepted; correctness not revealed
-    content.querySelectorAll('.option').forEach(btn=>{
-      btn.classList.remove('correct','wrong');
-      if(btn.dataset.key===selected) btn.classList.add('selected');
-    });
-    resolved=true;
-    setFeedback('info','Ответ принят. Правильность увидите на итоговом экране.');
-    checkBtn.classList.add('hidden');
-    nextBtn.classList.remove('hidden');
-    return;
-  }
 
   if(current.type==='mcq'){
     if(!selected){setFeedback('bad','Сначала выберите одну формулу.');return}
@@ -813,11 +854,6 @@ function nextQuestion(){
     return;
   }
 
-  if(finalMode){
-    showResults();
-    return;
-  }
-
   phaseIndex++;
   questionIndex=0;
   if(phaseIndex<phases.length){
@@ -825,10 +861,7 @@ function nextQuestion(){
     return;
   }
 
-  finalMode=true;
-  finalQuestions=shuffle(finalBank).slice(0,5);
-  questionIndex=0;
-  renderCurrent();
+  showResults();
 }
 
 function updateProgress(){
@@ -836,8 +869,6 @@ function updateProgress(){
   let pos,total,label;
   if(repeatMode){
     pos=questionIndex+1;total=repeatQueue.length;label='Работа над ошибками';
-  }else if(finalMode){
-    pos=questionIndex+1;total=finalQuestions.length;label='Финальная проверка';
   }else{
     pos=basePosition();total=totalBaseCount();label=phases[phaseIndex].name;
   }
@@ -847,6 +878,9 @@ function updateProgress(){
 }
 
 function showResults(){
+  testActive=false;
+  stopTimer();
+  app.classList.remove('testing');
   shell.style.display='none';
   progressWrap.style.display='none';
   results.style.display='block';
@@ -888,24 +922,93 @@ function resetRun(){
   phaseIndex=0;questionIndex=0;current=null;selected=null;attempts=0;resolved=false;
   buildSlots=[];selectedErrorPart=null;selectedReplacement=null;currentWasSolved=false;
   runErrors=[];score={first:0,solved:0,total:0};categoryStats={};
-  finalQuestions=[];finalMode=false;repeatMode=false;repeatQueue=[];
+  repeatMode=false;repeatQueue=[];
+  testActive=true;
+  app.classList.add('testing');
+  resetTimerValue();
+  if(timerEnabled) startTimer();
   results.style.display='none';intro.style.display='none';shell.style.display='block';
   renderCurrent();
 }
 
 function startRepeat(){
   const ids=new Set(runErrors.map(q=>q.id));
-  const source=[...recognize,...build,...errors,...situations,...finalBank];
-  repeatQueue=source.filter(q=>ids.has(q.id)).map(q=>{
-    if(q.type==='final') return {...q,type:'mcq',phase:'Повторение',tone:'blue',helper:''};
-    return q;
-  });
+  const source=[...recognize,...build,...errors];
+  repeatQueue=source.filter(q=>ids.has(q.id));
   if(!repeatQueue.length) return;
-  repeatMode=true;finalMode=false;questionIndex=0;
+  repeatMode=true;questionIndex=0;
   runErrors=[];score={first:0,solved:0,total:0};categoryStats={};
+  testActive=true;
+  app.classList.add('testing');
+  resetTimerValue();
+  if(timerEnabled) startTimer();
   results.style.display='none';shell.style.display='block';
   renderCurrent();
 }
+
+
+function formatTime(seconds){
+  const m=Math.floor(seconds/60).toString().padStart(2,'0');
+  const s=(seconds%60).toString().padStart(2,'0');
+  return `${m}:${s}`;
+}
+function updateTimerUI(){
+  timerDisplay.textContent=formatTime(timerSeconds);
+  timerDisplay.classList.toggle('hidden',!timerEnabled);
+  timerPauseBtn.classList.toggle('hidden',!timerEnabled);
+  timerResetBtn.classList.toggle('hidden',!timerEnabled);
+  timerToggleBtn.textContent=timerEnabled?'ТАЙМЕР: ВКЛ':'ТАЙМЕР: ВЫКЛ';
+  timerPauseBtn.textContent=timerRunning?'ПАУЗА':'ПРОДОЛЖИТЬ';
+}
+function startTimer(){
+  if(!timerEnabled || timerRunning) return;
+  timerRunning=true;
+  clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{
+    timerSeconds++;
+    updateTimerUI();
+  },1000);
+  updateTimerUI();
+}
+function stopTimer(){
+  timerRunning=false;
+  clearInterval(timerInterval);
+  timerInterval=null;
+  updateTimerUI();
+}
+function resetTimerValue(){
+  timerSeconds=0;
+  updateTimerUI();
+}
+function setTimerEnabled(enabled){
+  timerEnabled=enabled;
+  if(!timerEnabled){
+    stopTimer();
+    timerSeconds=0;
+  }else if(testActive){
+    startTimer();
+  }
+  updateTimerUI();
+}
+function toggleTheme(){
+  const dark=document.documentElement.dataset.theme==='dark';
+  document.documentElement.dataset.theme=dark?'light':'dark';
+  themeBtn.textContent=dark?'ТЁМНАЯ ТЕМА':'СВЕТЛАЯ ТЕМА';
+}
+
+themeBtn.addEventListener('click',toggleTheme);
+timerToggleBtn.addEventListener('click',()=>setTimerEnabled(!timerEnabled));
+timerPauseBtn.addEventListener('click',()=>{
+  if(!timerEnabled) return;
+  if(timerRunning) stopTimer(); else if(testActive) startTimer();
+});
+timerResetBtn.addEventListener('click',()=>{
+  const wasRunning=timerRunning;
+  stopTimer();
+  resetTimerValue();
+  if(wasRunning && testActive) startTimer();
+});
+updateTimerUI();
 
 document.getElementById('startBtn').addEventListener('click',resetRun);
 checkBtn.addEventListener('click',checkCurrent);
