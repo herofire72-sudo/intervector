@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<script src="https://telegram.org/js/telegram-web-app.js?63"></script>
+<title>Кинематика в графиках — интерактив</title>
+<style>
+:root{
+  --bg:#eef5ff;--card:#fff;--line:#1d3b8b;--grid:#94A3B8;--text:#1f2937;--muted:#64748b;
+  --ok:#166534;--ok-bg:#ecfdf3;--bad:#991b1b;--bad-bg:#fef2f2;--green:#2f6b4f;
+  --border:#c9d8f2;--shadow:0 8px 26px rgba(29,59,139,.10);--radius:18px;
+  --page-bg-start:#f7fbff;--page-bg-end:#eef5ff;--chip-bg:#f0f7ff;--chip-border:#d6e3fb;
+  --stat-bg:#f8fbff;--stat-border:#dde8fb;--progress-bg:#dfe9fb;--progress-border:#c8d8f2;
+  --soft-panel:#fbfdff;--soft-panel-border:#dbe7fb;--field-bg:#fbfdff;--field-border:#d6e3fb;
+  --secondary-bg:#edf4ff;--secondary-border:#d3e0f8;--answer-border:#bfcff0;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,var(--page-bg-start) 0%,var(--page-bg-end) 100%);color:var(--text);font-family:"Times New Roman",Georgia,serif}
+body{
+  padding:
+    calc(18px + var(--tg-content-safe-area-inset-top, 0px))
+    calc(18px + var(--tg-content-safe-area-inset-right, 0px))
+    calc(18px + var(--tg-content-safe-area-inset-bottom, 0px))
+    calc(18px + var(--tg-content-safe-area-inset-left, 0px));
+}
+body{position:relative;min-height:100vh;transition:background .25s ease,color .25s ease}
+.grid-bg{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  opacity:.52;
+  background-image:
+    linear-gradient(rgba(89,135,197,.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(89,135,197,.12) 1px, transparent 1px);
+  background-size:24px 24px;
+}
+body.theme-dark .grid-bg{
+  opacity:.34;
+  background-image:
+    linear-gradient(rgba(135,169,220,.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(135,169,220,.12) 1px, transparent 1px);
+}
+.constellation-bg{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity .25s ease;background:
+  radial-gradient(circle at 12% 22%, rgba(255,255,255,.85) 0 1px, transparent 1.6px),
+  radial-gradient(circle at 20% 72%, rgba(255,255,255,.8) 0 1.1px, transparent 1.7px),
+  radial-gradient(circle at 32% 38%, rgba(255,255,255,.55) 0 1px, transparent 1.6px),
+  radial-gradient(circle at 38% 16%, rgba(255,255,255,.7) 0 1.2px, transparent 1.8px),
+  radial-gradient(circle at 44% 62%, rgba(255,255,255,.65) 0 1.1px, transparent 1.7px),
+  radial-gradient(circle at 58% 28%, rgba(255,255,255,.72) 0 1.2px, transparent 1.8px),
+  radial-gradient(circle at 65% 80%, rgba(255,255,255,.68) 0 1.1px, transparent 1.7px),
+  radial-gradient(circle at 74% 46%, rgba(255,255,255,.78) 0 1.15px, transparent 1.75px),
+  radial-gradient(circle at 82% 18%, rgba(255,255,255,.52) 0 1px, transparent 1.6px),
+  radial-gradient(circle at 88% 66%, rgba(255,255,255,.75) 0 1.2px, transparent 1.8px);}
+.constellation-bg::before,.constellation-bg::after{content:"";position:absolute;inset:0;background-repeat:no-repeat;opacity:.22}
+.constellation-bg::before{background-image:
+  linear-gradient(rgba(140,177,255,.18),rgba(140,177,255,.18)),
+  linear-gradient(rgba(140,177,255,.16),rgba(140,177,255,.16)),
+  linear-gradient(rgba(140,177,255,.17),rgba(140,177,255,.17)),
+  linear-gradient(rgba(140,177,255,.16),rgba(140,177,255,.16)),
+  linear-gradient(rgba(140,177,255,.14),rgba(140,177,255,.14)),
+  linear-gradient(rgba(140,177,255,.14),rgba(140,177,255,.14));
+  background-size:120px 1px,90px 1px,110px 1px,130px 1px,80px 1px,95px 1px;
+  background-position:12% 22%, 32% 38%, 58% 28%, 65% 80%, 74% 46%, 20% 72%;
+  transform:rotate(-18deg);}
+.constellation-bg::after{background-image:
+  linear-gradient(rgba(140,177,255,.14),rgba(140,177,255,.14)),
+  linear-gradient(rgba(140,177,255,.16),rgba(140,177,255,.16)),
+  linear-gradient(rgba(140,177,255,.14),rgba(140,177,255,.14)),
+  linear-gradient(rgba(140,177,255,.15),rgba(140,177,255,.15));
+  background-size:84px 1px,76px 1px,66px 1px,72px 1px;
+  background-position:44% 62%, 82% 18%, 38% 16%, 88% 66%;
+  transform:rotate(32deg);}
+body.theme-dark{
+  --card:#0f1a2d;--line:#9fc3ff;--grid:#47556f;--text:#edf4ff;--muted:#b3c1db;
+  --ok:#8ce4a7;--ok-bg:#13281d;--bad:#ffb0b0;--bad-bg:#2c1719;--green:#8ce4a7;
+  --border:#32415d;--shadow:0 10px 28px rgba(0,0,0,.28);
+  --page-bg-start:#08111f;--page-bg-end:#0d1830;--chip-bg:#12233f;--chip-border:#294265;
+  --stat-bg:#101e35;--stat-border:#2f4466;--progress-bg:#13233d;--progress-border:#2f4466;
+  --soft-panel:#101a2b;--soft-panel-border:#31415d;--field-bg:#101a2b;--field-border:#32415d;
+  --secondary-bg:#162742;--secondary-border:#365076;--answer-border:#4a6694;--info-bg:#13223a;--info-text:#dbe8ff;--info-border:#365076;
+}
+body.theme-dark .constellation-bg{opacity:.62}
+/* В тёмной теме сами графики остаются на светлом «листе».
+   Это сохраняет контраст осей, сетки и тёмно-синей линии графика. */
+body.theme-dark .svg-box{
+  background:#f7faff;
+  border-color:#506887;
+}
+body.theme-dark .svg-box svg rect{fill:#ffffff}
+body.theme-dark .svg-box svg text{
+  fill:#111827;
+  filter:none;
+}
+body.theme-dark .svg-box svg line[stroke="#000"]{
+  stroke:#000000;
+  filter:none;
+}
+body.theme-dark .svg-box svg polygon[fill="#000"]{
+  fill:#000000;
+  filter:none;
+}
+body.theme-dark .svg-box svg polyline[stroke="#1d3b8b"]{
+  stroke:#1d3b8b;
+}
+body.theme-dark .svg-box svg circle[fill="#1d3b8b"]{
+  fill:#1d3b8b;
+}
+body.theme-dark .svg-box svg line[stroke="#94A3B8"]{
+  stroke:#94A3B8;
+}
+
+.app{max-width:1180px;margin:0 auto;position:relative;z-index:1}
+.hero,.card,.mini-card,.task-card,.summary-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.hero{padding:20px 22px;margin-bottom:16px}
+.hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.hero h1{margin:8px 0 0;color:var(--line);font-size:34px;line-height:1.05}
+.subtitle{margin-top:8px;color:var(--muted);font-size:18px;max-width:820px}
+.badge,.tag{display:inline-flex;align-items:center;padding:7px 11px;border-radius:999px;background:var(--chip-bg);border:1px solid var(--chip-border);color:var(--line);font-weight:700}
+.stats{display:flex;gap:10px;flex-wrap:wrap;font-size:16px}
+.stats span{padding:8px 11px;background:var(--stat-bg);border:1px solid var(--stat-border);border-radius:12px}
+.timer-stat b{font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.timer-control,.timer-reset{
+  padding:8px 11px;
+  border-radius:12px;
+  font:700 15px inherit;
+  border:1px solid var(--stat-border);
+}
+.timer-control{
+  background:var(--line);
+  color:#fff;
+}
+.timer-reset{
+  background:var(--stat-bg);
+  color:var(--line);
+}
+body.theme-dark .timer-control{
+  background:#8fb8ff;
+  color:#08111f;
+}
+.progress-wrap{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin-top:17px}
+.progress{height:15px;border-radius:999px;background:var(--progress-bg);overflow:hidden;border:1px solid var(--progress-border)}
+.progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--line),#4f79db)}
+.card{padding:20px 22px}
+.stage-title{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.stage-num{font-size:19px;font-weight:700;color:var(--line)}
+.stage-title h2{margin:2px 0 0;color:var(--line);font-size:28px}
+.lead{margin:0 0 14px;font-size:19px;line-height:1.4}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.mini-card,.task-card,.summary-card{padding:14px}
+.mini-card h3,.task-card h3,.summary-card h3{margin:0 0 8px;color:var(--line);font-size:22px}
+.svg-box{padding:10px;background:var(--soft-panel);border:1px solid var(--soft-panel-border);border-radius:14px;overflow:hidden}
+svg{display:block;width:100%;height:auto}
+fieldset{margin:10px 0 0;padding:10px 12px;border:1px solid var(--field-border);border-radius:14px;background:var(--field-bg)}
+legend{padding:0 6px;font-weight:700;color:var(--line)}
+.choices{display:grid;gap:7px}
+.choice{display:flex;align-items:flex-start;gap:9px;padding:7px 8px;border-radius:9px;cursor:pointer}
+.choice:hover{background:var(--chip-bg)}
+.choice input{transform:translateY(2px)}
+.select-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.input-group{display:grid;gap:6px}
+.input-group label{font-weight:700;color:var(--line)}
+select{width:100%;padding:11px 12px;border-radius:12px;border:1.5px solid var(--field-border);background:var(--card);color:var(--text);font:17px inherit}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+button{appearance:none;border:none;border-radius:12px;padding:12px 16px;font:700 17px inherit;cursor:pointer;transition:.15s transform ease,.15s opacity ease,.15s background ease}
+button:hover{transform:translateY(-1px)}
+button:disabled{opacity:.52;cursor:not-allowed;transform:none}
+button.primary{background:var(--line);color:#fff}
+button.secondary{background:var(--secondary-bg);color:var(--line);border:1px solid var(--secondary-border)}
+button.answer-choice{background:var(--card);color:var(--line);border:1.5px solid var(--answer-border)}
+button.answer-choice.selected{background:var(--line);color:#fff;border-color:var(--line)}
+button.ok{background:var(--green);color:#fff}
+.feedback{margin-top:14px;padding:13px 15px;border-radius:14px;font-size:18px;line-height:1.4;display:none}
+.feedback.ok{display:block;background:var(--ok-bg);color:var(--ok);border:1px solid #b8e3ca}
+.feedback.bad{display:block;background:var(--bad-bg);color:var(--bad);border:1px solid #f2c4c4}
+.feedback.info{display:block;background:var(--info-bg,#f4f8ff);color:var(--info-text,#24364d);border:1px solid var(--info-border,#d9e6fb)}
+.status-line{font-size:17px;font-weight:700;color:var(--line);margin-top:9px;min-height:24px}
+.hidden{display:none!important}
+.builder-desc{font-size:18px;line-height:1.45}
+.motion-steps{display:grid;gap:9px}
+.motion-step{
+  display:grid;
+  grid-template-columns:88px 1fr;
+  gap:12px;
+  align-items:start;
+  background:var(--soft-panel);
+  padding:11px 13px;
+  border-radius:13px;
+  border:1px solid var(--soft-panel-border);
+}
+.motion-time{
+  color:var(--line);
+  font-weight:700;
+  white-space:nowrap;
+}
+.motion-text{color:var(--text)}
+@media(max-width:560px){
+  .motion-step{grid-template-columns:1fr;gap:4px}
+}
+.legend-inline{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px}
+.legend-inline span{padding:7px 10px;border-radius:999px;border:1px solid var(--soft-panel-border);background:var(--soft-panel);font-size:15px}
+.final-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.summary-card ul{margin:8px 0 0;padding-left:22px}
+.summary-card li{margin:6px 0;font-size:18px}
+.foot{margin-top:15px;text-align:center;font-size:16px;color:var(--muted)}
+.foot a{color:var(--line);text-decoration:none;font-weight:700}
+#builderSvg{touch-action:none;user-select:none;-webkit-user-select:none}
+.drag-point{touch-action:none}
+.hero-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.theme-switch{background:var(--secondary-bg);color:var(--line);border:1px solid var(--secondary-border);padding:10px 14px;border-radius:999px;font:700 16px inherit}
+.theme-switch:hover{background:var(--chip-bg)}
+body.theme-dark .foot a{color:#b8d2ff}
+body.theme-dark button.primary{background:#8fb8ff;color:#08111f}
+body.theme-dark button.answer-choice.selected{background:#8fb8ff;color:#08111f;border-color:#8fb8ff}
+body.theme-dark button.ok{background:#79d79a;color:#07160d}
+
+@media(min-width:1100px){
+  body{font-size:18px}
+  .hero h1{font-size:39px}
+  .subtitle{font-size:21px}
+  .stats{font-size:18px}
+  .badge,.tag{font-size:17px}
+  .stage-num{font-size:21px}
+  .stage-title h2{font-size:32px}
+  .lead{font-size:21px}
+  .mini-card h3,.task-card h3,.summary-card h3{font-size:25px}
+  legend,.input-group label{font-size:19px}
+  select{font-size:19px}
+  button{font-size:19px}
+  .choice{font-size:19px}
+  .feedback{font-size:20px}
+  .status-line{font-size:19px}
+  .builder-desc{font-size:20px}
+  .graph-choice-title{font-size:18px}
+  .formula-card{font-size:27px}
+  .section-note{font-size:18px}
+  .legend-inline span{font-size:17px}
+  .summary-card li{font-size:20px}
+  .foot{font-size:17px}
+}
+
+@media(max-width:940px){.grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){
+  body{
+    padding:
+      calc(10px + var(--tg-content-safe-area-inset-top, 0px))
+      calc(10px + var(--tg-content-safe-area-inset-right, 0px))
+      calc(10px + var(--tg-content-safe-area-inset-bottom, 0px))
+      calc(10px + var(--tg-content-safe-area-inset-left, 0px));
+  }.hero,.card{padding:16px}.grid-2,.grid-3,.select-row,.final-grid{grid-template-columns:1fr}
+  .hero h1{font-size:28px}.stage-title h2{font-size:24px}.lead{font-size:18px}
+}
+
+.graph-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:10px}
+.graph-choice{display:block;cursor:pointer;min-width:0}
+.graph-choice input{position:absolute;opacity:0;pointer-events:none}
+.graph-choice-inner{height:100%;padding:8px;border:2px solid var(--soft-panel-border);border-radius:14px;background:var(--soft-panel);transition:border-color .15s ease,box-shadow .15s ease,transform .15s ease}
+.graph-choice input:checked + .graph-choice-inner{border-color:var(--line);box-shadow:0 0 0 2px color-mix(in srgb,var(--line) 18%, transparent)}
+.graph-choice-title{font-size:16px;font-weight:700;color:var(--line);margin:0 0 6px;text-align:center}
+.graph-choice .svg-box{padding:5px}
+.option-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.match-list{display:grid;gap:12px}
+.match-row{display:grid;grid-template-columns:minmax(220px,1fr) minmax(210px,.75fr);gap:14px;align-items:center;padding:10px;border:1px solid var(--soft-panel-border);border-radius:14px;background:var(--soft-panel)}
+.point-label{font-weight:700;font-size:18px}
+.formula-card{font-size:24px;text-align:center;padding:12px 14px;margin-bottom:12px;border:1px solid var(--soft-panel-border);border-radius:14px;background:var(--soft-panel)}
+.section-note{font-size:16px;color:var(--muted);margin-top:8px}
+@media(max-width:900px){.option-3{grid-template-columns:1fr 1fr}.match-row{grid-template-columns:1fr}}
+@media(max-width:620px){.graph-choice-grid,.option-3{grid-template-columns:1fr}}
+
+/* Крупный режим для компьютера и интерактивной доски */
+@media(min-width:1100px){
+  .app{max-width:1320px}
+
+  .hero{padding:24px 28px}
+  .card{padding:24px 28px}
+  .mini-card,.task-card,.summary-card{padding:18px}
+
+  .hero h1{font-size:44px;line-height:1.05}
+  .subtitle{font-size:24px;line-height:1.35;max-width:980px}
+  .badge,.tag{font-size:19px;padding:8px 13px}
+
+  .stats{font-size:20px;gap:12px}
+  .stats span{padding:10px 13px}
+  .theme-switch,.timer-control,.timer-reset{font-size:18px;padding:10px 14px}
+
+  .stage-num{font-size:24px}
+  .stage-title h2{font-size:36px;line-height:1.12}
+  .lead{font-size:24px;line-height:1.42}
+
+  .mini-card h3,.task-card h3,.summary-card h3{font-size:28px}
+  fieldset{padding:14px 16px}
+  legend,.input-group label{font-size:22px}
+  .choice{font-size:22px;line-height:1.3;padding:10px 12px;min-height:46px}
+  .choice input{transform:translateY(3px) scale(1.22)}
+
+  select{font-size:21px;padding:13px 14px;min-height:50px}
+  button{font-size:21px;padding:13px 18px;min-height:48px}
+
+  .feedback{font-size:22px;line-height:1.45;padding:15px 17px}
+  .status-line{font-size:21px}
+  .builder-desc{font-size:22px}
+  .motion-step{font-size:21px}
+  .motion-time{font-size:22px}
+
+  .graph-choice-title{font-size:21px}
+  .formula-card{font-size:31px;padding:15px 18px}
+  .section-note{font-size:20px}
+  .legend-inline span{font-size:19px}
+  .summary-card li{font-size:22px}
+  .point-label{font-size:21px}
+  .foot{font-size:18px}
+
+  .svg-box{padding:12px}
+  .graph-choice .svg-box{padding:8px}
+}
+
+
+/* Подсветка ошибочного ответа после проверки */
+select.answer-wrong{
+  border-color:#dc2626 !important;
+  background:#fff1f2 !important;
+  color:#991b1b !important;
+  box-shadow:0 0 0 2px rgba(220,38,38,.12);
+}
+.choice.answer-wrong{
+  background:#fff1f2 !important;
+  color:#991b1b;
+  outline:2px solid #fca5a5;
+}
+.graph-choice.answer-wrong .graph-choice-inner{
+  border-color:#dc2626 !important;
+  background:#fff1f2 !important;
+  box-shadow:0 0 0 2px rgba(220,38,38,.12) !important;
+}
+button.answer-choice.answer-wrong{
+  background:#fee2e2 !important;
+  color:#991b1b !important;
+  border-color:#dc2626 !important;
+}
+.status-line.answer-wrong{
+  color:#b91c1c !important;
+}
+.dirPick.answer-wrong,
+.drag-point.answer-wrong{
+  fill:#dc2626 !important;
+  stroke:#991b1b !important;
+}
+body.theme-dark select.answer-wrong,
+body.theme-dark .choice.answer-wrong,
+body.theme-dark .graph-choice.answer-wrong .graph-choice-inner{
+  background:#35171a !important;
+  color:#fecaca !important;
+  border-color:#ef4444 !important;
+}
+
+/* Подсветка верного ответа после проверки */
+select.answer-correct{
+  border-color:#16a34a !important;
+  background:#f0fdf4 !important;
+  color:#166534 !important;
+  box-shadow:0 0 0 2px rgba(22,163,74,.12);
+}
+.choice.answer-correct{
+  background:#f0fdf4 !important;
+  color:#166534;
+  outline:2px solid #86efac;
+}
+.graph-choice.answer-correct .graph-choice-inner{
+  border-color:#16a34a !important;
+  background:#f0fdf4 !important;
+  box-shadow:0 0 0 2px rgba(22,163,74,.12) !important;
+}
+button.answer-choice.answer-correct{
+  background:#dcfce7 !important;
+  color:#166534 !important;
+  border-color:#16a34a !important;
+}
+.status-line.answer-correct{
+  color:#15803d !important;
+}
+.dirPick.answer-correct,
+.drag-point.answer-correct{
+  fill:#22c55e !important;
+  stroke:#15803d !important;
+}
+body.theme-dark select.answer-correct,
+body.theme-dark .choice.answer-correct,
+body.theme-dark .graph-choice.answer-correct .graph-choice-inner{
+  background:#14261a !important;
+  color:#bbf7d0 !important;
+  border-color:#22c55e !important;
+}
+
+</style>
+</head>
+<body>
+<div class="grid-bg" aria-hidden="true"></div>
+<div class="constellation-bg" aria-hidden="true"></div>
+<div class="app">
+  <section class="hero">
+    <div class="hero-top">
+      <div>
+        <div class="badge">ФИЗИКА · ЕГЭ</div>
+        <h1>Кинематика в графиках</h1>
+        <div class="subtitle">Чтение графиков x(t), vₓ(t) и aₓ(t): равномерное и равноускоренное движение, знаки проекций, смена направления и сопоставление графиков.</div>
+      </div>
+      <div class="hero-controls"><button class="theme-switch" id="themeToggle" type="button">☾ Тёмная тема</button><div class="stats">
+        <span>Этап: <b id="stageCounter">1 / 10</b></span>
+        <span>Баллы: <b id="scoreCounter">0 / 71</b></span>
+        <span>Пройдено: <b id="doneCounter">0 / 10</b></span>
+        <span class="timer-stat">Время: <b id="timerDisplay">00:00</b></span>
+        <button class="timer-control" id="timerToggle" type="button">Старт</button>
+        <button class="timer-reset" id="timerReset" type="button" aria-label="Сбросить таймер">Сброс</button>
+      </div></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+      <div class="tag" id="stageLabel">1. Равномерное x(t)</div>
+    </div>
+  </section>
+
+  <main class="card" id="stageContainer"></main>
+
+  <div class="foot">2026 · Кондакова И.С. · <a href="https://vk.ru/phizege" target="_blank" rel="noopener">vk.ru/phizege</a></div>
+</div>
+
+<script>
+// Telegram Mini App: инициализация оболочки. Логика тренажёра остаётся локальной.
+const tgWebApp = window.Telegram?.WebApp || null;
+if(tgWebApp){
+  tgWebApp.ready();
+  tgWebApp.expand();
+}
+
+const THEME_KEY = "kinematics-theme";
+
+let timerElapsedMs = 0;
+let timerRunStartedAt = null;
+let timerInterval = null;
+
+function formatElapsed(ms){
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+}
+
+function getElapsedMs(){
+  return timerElapsedMs + (timerRunStartedAt === null ? 0 : Date.now() - timerRunStartedAt);
+}
+
+function updateTimer(){
+  const el = document.getElementById("timerDisplay");
+  if(el) el.textContent = formatElapsed(getElapsedMs());
+}
+
+function updateTimerButton(){
+  const btn = document.getElementById("timerToggle");
+  if(!btn) return;
+  btn.textContent = timerRunStartedAt === null ? (getElapsedMs() > 0 ? "Продолжить" : "Старт") : "Пауза";
+}
+
+function startTimer(){
+  if(timerRunStartedAt !== null) return;
+  timerRunStartedAt = Date.now();
+  updateTimer();
+  updateTimerButton();
+  if(timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(updateTimer, 1000);
+}
+
+function pauseTimer(){
+  if(timerRunStartedAt === null) return;
+  timerElapsedMs += Date.now() - timerRunStartedAt;
+  timerRunStartedAt = null;
+  if(timerInterval){
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  updateTimer();
+  updateTimerButton();
+}
+
+function resetTimer(){
+  if(timerInterval){
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  timerElapsedMs = 0;
+  timerRunStartedAt = null;
+  updateTimer();
+  updateTimerButton();
+}
+
+function stopTimer(){
+  pauseTimer();
+}
+
+function initTimerControls(){
+  updateTimer();
+  updateTimerButton();
+
+  const toggle = document.getElementById("timerToggle");
+  const reset = document.getElementById("timerReset");
+
+  if(toggle){
+    toggle.addEventListener("click",()=>{
+      if(timerRunStartedAt === null) startTimer();
+      else pauseTimer();
+    });
+  }
+
+  if(reset){
+    reset.addEventListener("click",resetTimer);
+  }
+}
+
+function applyTheme(theme){
+  const dark = theme === "dark";
+  document.body.classList.toggle("theme-dark", dark);
+  const btn = document.getElementById("themeToggle");
+  if(btn){
+    btn.textContent = dark ? "☀ Светлая тема" : "☾ Тёмная тема";
+    btn.setAttribute("aria-label", dark ? "Переключить на светлую тему" : "Переключить на тёмную тему");
+  }
+
+  // Согласуем цвет системных панелей Telegram с выбранной темой тренажёра.
+  if(tgWebApp){
+    const bg = dark ? "#08111f" : "#f7fbff";
+    try{ tgWebApp.setHeaderColor(bg); }catch(e){}
+    try{ tgWebApp.setBackgroundColor(bg); }catch(e){}
+    try{ if(tgWebApp.setBottomBarColor) tgWebApp.setBottomBarColor(bg); }catch(e){}
+  }
+}
+function initTheme(){
+  const saved = localStorage.getItem(THEME_KEY);
+  applyTheme(saved === "dark" ? "dark" : "light");
+  const btn = document.getElementById("themeToggle");
+  if(btn){
+    btn.addEventListener("click",()=>{
+      const next = document.body.classList.contains("theme-dark") ? "light" : "dark";
+      localStorage.setItem(THEME_KEY, next);
+      applyTheme(next);
+    });
+  }
+}
+
+const STAGE_COUNT=10;
+const MAX_SCORE=68;
+const appState={
+  stage:0,score:0,correct:0,stageDone:Array(STAGE_COUNT).fill(false),
+  diagnostics:{
+    xtUniform:{ok:0,total:0,name:'равномерное движение: x(t)'},
+    xtAccel:{ok:0,total:0,name:'равноускоренное движение: x(t)'},
+    equation:{ok:0,total:0,name:'уравнение координаты → график'},
+    vt:{ok:0,total:0,name:'чтение графика vₓ(t)'},
+    dir:{ok:0,total:0,name:'смена направления по vₓ(t)'},
+    accel:{ok:0,total:0,name:'график ускорения aₓ(t)'},
+    match:{ok:0,total:0,name:'сопоставление x(t) и aₓ(t)'},
+    triple:{ok:0,total:0,name:'связь x(t), vₓ(t), aₓ(t)'},
+    build:{ok:0,total:0,name:'построение vₓ(t)'}
+  },
+  idx:[0,0,0,0,0,0,0,0,0,0],
+  builder:{values:[0,0,0,0,0],dragging:null}
+};
+
+const uniformXTasks=[
+  {kind:'posAbove',direction:'По направлению оси Ox',sign:'vₓ > 0'},
+  {kind:'negAbove',direction:'Против направления оси Ox',sign:'vₓ < 0'},
+  {kind:'zeroAbove',direction:'Тело покоится',sign:'vₓ = 0'},
+  {kind:'posBelow',direction:'По направлению оси Ox',sign:'vₓ > 0'},
+  {kind:'negBelow',direction:'Против направления оси Ox',sign:'vₓ < 0'},
+  {kind:'zeroBelow',direction:'Тело покоится',sign:'vₓ = 0'}
+];
+
+const accelXTasks=[
+  {curve:'up',vertexY:-2,aT:2,vx:'vₓ < 0',ax:'aₓ > 0',speed:'Модуль скорости уменьшается'},
+  {curve:'up',vertexY:-2,aT:4,vx:'vₓ = 0',ax:'aₓ > 0',speed:'В точке A тело мгновенно покоится'},
+  {curve:'up',vertexY:-2,aT:6.5,vx:'vₓ > 0',ax:'aₓ > 0',speed:'Модуль скорости увеличивается'},
+  {curve:'down',vertexY:3,aT:2.5,vx:'vₓ > 0',ax:'aₓ < 0',speed:'Модуль скорости уменьшается'},
+  {curve:'down',vertexY:-1,aT:6,vx:'vₓ < 0',ax:'aₓ < 0',speed:'Модуль скорости увеличивается'}
+];
+
+const equationTasks=[
+  {formula:'x = 5 + 2t − 3t²/2',correct:'branchDown',branchOnly:true},
+  {formula:'x = −3 − 4t + t²',correct:'branchUp',branchOnly:true},
+  {formula:'x = −2 + 3t + t²',correct:'eq9'},
+  {formula:'x = 4 − 2t + t²/2',correct:'eq10'},
+  {formula:'x = −1 + 4t − t²',correct:'eq11'},
+  {formula:'x = 3 − t − t²/2',correct:'eq12'}
+];
+
+const velocityTasks=[
+  {vxSign:'pos',aSign:'pos',direction:'По направлению оси Ox',speed:'Модуль скорости увеличивается',explain:'vₓ > 0, тело движется по направлению Ox; |v| увеличивается.'},
+  {vxSign:'pos',aSign:'neg',direction:'По направлению оси Ox',speed:'Модуль скорости уменьшается',explain:'vₓ > 0, тело движется по направлению Ox; |v| уменьшается.'},
+  {vxSign:'neg',aSign:'neg',direction:'Против направления оси Ox',speed:'Модуль скорости увеличивается',explain:'vₓ < 0, тело движется против направления Ox; |v| увеличивается.'},
+  {vxSign:'neg',aSign:'pos',direction:'Против направления оси Ox',speed:'Модуль скорости уменьшается',explain:'vₓ < 0, тело движется против направления Ox; |v| уменьшается.'},
+  {vxSign:'pos',aSign:'zero',direction:'По направлению оси Ox',speed:'Модуль скорости не изменяется',explain:'vₓ = const > 0: модуль скорости постоянен.'},
+  {vxSign:'neg',aSign:'zero',direction:'Против направления оси Ox',speed:'Модуль скорости не изменяется',explain:'vₓ = const < 0: модуль скорости постоянен.'}
+];
+
+const velocityDirectionTasks=[
+  {points:[[0,2],[2,1],[4,0],[6,-1],[8,-2]],zeroCandidates:[4],correct:4},
+  {points:[[0,-2],[2,-1],[4,0],[6,1],[8,2]],zeroCandidates:[4],correct:4},
+  {points:[[0,2],[2,1],[4,0],[6,1],[8,2]],zeroCandidates:[4],correct:null},
+  {points:[[0,-2],[2,-1],[4,0],[6,-1],[8,-2]],zeroCandidates:[4],correct:null}
+];
+
+const accelGraphTasks=[
+  {kind:'graph',prompt:'Какой график соответствует постоянному положительному ускорению: aₓ = const > 0?',correct:'aPos'},
+  {kind:'graph',prompt:'Какой график соответствует постоянному отрицательному ускорению: aₓ = const < 0?',correct:'aNeg'},
+  {kind:'graph',prompt:'Какой график соответствует движению с aₓ = 0?',correct:'aZero'},
+  {kind:'statement',prompt:'Выберите верное утверждение о графике aₓ(t), если ускорение постоянно.',correct:'horizontal'}
+];
+
+const matchXATasks=[
+  {kind:'single',xKind:'lineUp',correct:'aZero'},
+  {kind:'single',xKind:'parabolaUp',correct:'aPos'},
+  {kind:'single',xKind:'parabolaDown',correct:'aNeg'},
+  {kind:'multi'}
+];
+
+const tripleTasks=[
+  {xKind:'parabolaUpVertex',vCorrect:'vIncCross',aCorrect:'aPos'},
+  {xKind:'parabolaDownVertex',vCorrect:'vDecCross',aCorrect:'aNeg'},
+  {xKind:'lineUp',vCorrect:'vConstPos',aCorrect:'aZero'}
+];
+
+function shuffleArray(items){for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]]}return items}
+shuffleArray(uniformXTasks);shuffleArray(accelXTasks);shuffleArray(velocityTasks);shuffleArray(velocityDirectionTasks);
+
+const stageLabels=['1. Равномерное x(t)','2. Равноускоренное x(t)','3. Смена направления по x(t)','4. Уравнение координаты','5. Анализ vₓ(t)','6. Смена направления по vₓ(t)','7. График aₓ(t)','8. x(t) ↔ aₓ(t)','9. x(t) ↔ vₓ(t) ↔ aₓ(t)','10. Построй vₓ(t)'];
+
+function updateTop(){
+  document.getElementById('stageCounter').textContent=`${appState.stage+1} / ${STAGE_COUNT}`;
+  document.getElementById('scoreCounter').textContent=`${appState.score} / ${MAX_SCORE}`;
+  document.getElementById('doneCounter').textContent=`${appState.stageDone.filter(Boolean).length} / ${STAGE_COUNT}`;
+  document.getElementById('progressBar').style.width=`${(appState.stage/STAGE_COUNT)*100}%`;
+  document.getElementById('stageLabel').textContent=stageLabels[appState.stage]||'Итог';
+}
+function escapeHtml(str){return String(str).replace(/[&<>"]/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[s])}
+function makeChoice(name,value,text){return `<label class="choice"><input type="radio" name="${name}" value="${escapeHtml(value)}"><span>${text}</span></label>`}
+function mount(html){document.getElementById('stageContainer').innerHTML=html}
+function showFeedback(id,type,html){const el=document.getElementById(id);el.className=`feedback ${type}`;el.innerHTML=html}
+function markSelectWrong(id,isCorrect){
+  const el=document.getElementById(id);
+  if(!el)return;
+  if(isCorrect) el.classList.add('answer-correct');
+  else el.classList.add('answer-wrong');
+}
+function markRadioWrong(name,expected){
+  const el=document.querySelector(`input[name="${name}"]:checked`);
+  if(!el)return;
+  const wrap=el.closest('.choice,.graph-choice');
+  if(!wrap)return;
+  if(el.value===expected) wrap.classList.add('answer-correct');
+  else wrap.classList.add('answer-wrong');
+}
+function markChosenWrong(el){
+  if(!el)return;
+  const wrap=el.closest('.choice,.graph-choice');
+  if(!wrap)return;
+  wrap.classList.add('answer-wrong');
+}
+function markChosenCorrect(el){
+  if(!el)return;
+  const wrap=el.closest('.choice,.graph-choice');
+  if(!wrap)return;
+  wrap.classList.add('answer-correct');
+}
+
+function scoreOnce(task,cat,ok,total){if(task._scored)return;appState.score+=ok;appState.correct+=ok;appState.diagnostics[cat].ok+=ok;appState.diagnostics[cat].total+=total;task._scored=true}
+function finishStage(stageIndex,nextIndex){appState.stageDone[stageIndex]=true;updateTop();goToStage(nextIndex)}
+
+let graphClipSeq=0;
+function drawGridGraph(config){
+  const width=config.width||360,height=config.height||240;
+  const margin={left:68,right:42,top:28,bottom:42};
+  const innerW=width-margin.left-margin.right,innerH=height-margin.top-margin.bottom;
+  const xMin=config.xMin??0,xMax=config.xMax??8,yMin=config.yMin??-3,yMax=config.yMax??3;
+  const xStep=config.xGridStep||1,yStep=config.yGridStep||1;
+  const xScale=x=>margin.left+((x-xMin)/(xMax-xMin))*innerW;
+  const yScale=y=>margin.top+((yMax-y)/(yMax-yMin))*innerH;
+  const zeroY=yScale(0),axisEndX=margin.left+innerW+9,topArrowY=margin.top-9,bottomY=margin.top+innerH;
+  let grid='';
+  for(let x=xMin;x<=xMax+1e-9;x+=xStep){const px=xScale(x);grid+=`<line x1="${px}" y1="${margin.top}" x2="${px}" y2="${bottomY}" stroke="#94A3B8" stroke-width="0.8"/>`}
+  for(let y=yMin;y<=yMax+1e-9;y+=yStep){const py=yScale(y);grid+=`<line x1="${margin.left}" y1="${py}" x2="${margin.left+innerW}" y2="${py}" stroke="#94A3B8" stroke-width="0.8"/>`}
+  const clipId=`graphClip${++graphClipSeq}`;
+  const path=`<polyline points="${config.points.map(p=>`${xScale(p[0])},${yScale(p[1])}`).join(' ')}" fill="none" stroke="#1d3b8b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#${clipId})"/>`;
+  const dots=(config.candidates||[]).map(c=>`<circle cx="${xScale(c)}" cy="${zeroY}" r="5" fill="#1d3b8b"/>`).join('');
+  return `<svg viewBox="0 0 ${width} ${height}" aria-label="график"><defs><clipPath id="${clipId}"><rect x="${margin.left}" y="${margin.top}" width="${innerW}" height="${innerH}"/></clipPath></defs><rect width="${width}" height="${height}" fill="#fff"/>${grid}<line x1="${margin.left}" y1="${zeroY}" x2="${axisEndX}" y2="${zeroY}" stroke="#000" stroke-width="1.8"/><polygon points="${axisEndX},${zeroY} ${axisEndX-8},${zeroY-4} ${axisEndX-8},${zeroY+4}" fill="#000"/><line x1="${margin.left}" y1="${bottomY}" x2="${margin.left}" y2="${topArrowY}" stroke="#000" stroke-width="1.8"/><polygon points="${margin.left},${topArrowY} ${margin.left-4},${topArrowY+8} ${margin.left+4},${topArrowY+8}" fill="#000"/><text x="${margin.left-12}" y="${zeroY+17}" text-anchor="end" font-size="17" font-weight="700">0</text><text x="${axisEndX-2}" y="${zeroY-8}" text-anchor="end" font-size="19" font-style="italic" font-weight="700">t</text><text x="${margin.left-10}" y="${margin.top-12}" text-anchor="end" font-size="19" font-style="italic" font-weight="700">${config.yLabel||'x'}</text>${path}${dots}</svg>`;
+}
+function sample(fn,tMax=8,step=.2){const pts=[];for(let t=0;t<=tMax+1e-9;t+=step)pts.push([+t.toFixed(3),fn(t)]);return pts}
+function markedGraph(config,marks=[]){
+  const width=config.width||430,height=config.height||300,margin={left:68,right:42,top:28,bottom:42};
+  const innerW=width-margin.left-margin.right,innerH=height-margin.top-margin.bottom;
+  const xMin=config.xMin??0,xMax=config.xMax??8,yMin=config.yMin??-5,yMax=config.yMax??5;
+  const xs=x=>margin.left+((x-xMin)/(xMax-xMin))*innerW,ys=y=>margin.top+((yMax-y)/(yMax-yMin))*innerH;
+  const zeroY=(yMin<=0&&yMax>=0)?ys(0):(margin.top+innerH);
+  const curvePx=(config.points||[]).map(p=>({x:xs(p[0]),y:ys(p[1])}));
+  const placed=[];
+
+  function rectFor(cx,cy,label,cfg){
+    const textW=Math.max(18,14*String(label).length+4), textH=22;
+    let left,right;
+    if(cfg.anchor==='end'){right=cx+cfg.dx; left=right-textW;}
+    else if(cfg.anchor==='middle'){left=cx+cfg.dx-textW/2; right=left+textW;}
+    else {left=cx+cfg.dx; right=left+textW;}
+    const baselineY=cy+cfg.dy;
+    return {left,right,top:baselineY-textH,bottom:baselineY+4,textW,textH};
+  }
+
+  function distPointToRect(px,py,r){
+    const dx=Math.max(r.left-px,0,px-r.right);
+    const dy=Math.max(r.top-py,0,py-r.bottom);
+    return Math.hypot(dx,dy);
+  }
+
+  function choosePos(m,cx,cy){
+    if(m.dx!==undefined||m.dy!==undefined||m.anchor){
+      return {dx:m.dx??10,dy:m.dy??-10,anchor:m.anchor||'start'};
+    }
+    const candidates=[
+      {dx:14,dy:-12,anchor:'start'},
+      {dx:14,dy:20,anchor:'start'},
+      {dx:-14,dy:-12,anchor:'end'},
+      {dx:-14,dy:20,anchor:'end'},
+      {dx:0,dy:-16,anchor:'middle'},
+      {dx:0,dy:28,anchor:'middle'}
+    ];
+    let best=candidates[0],bestScore=1e9;
+    for(const c of candidates){
+      const r=rectFor(cx,cy,m.label,c);
+      let score=0;
+
+      if(r.left<margin.left+4) score += 2000 + (margin.left+4-r.left)*20;
+      if(r.right>margin.left+innerW-4) score += 2000 + (r.right-(margin.left+innerW-4))*20;
+      if(r.top<margin.top+4) score += 2000 + (margin.top+4-r.top)*20;
+      if(r.bottom>margin.top+innerH-4) score += 2000 + (r.bottom-(margin.top+innerH-4))*20;
+
+      if(r.left<=margin.left+10 && r.right>=margin.left-2) score += 350;
+      if(r.top<=zeroY+10 && r.bottom>=zeroY-10) score += 350;
+
+      const dotRect={left:cx-8,right:cx+8,top:cy-8,bottom:cy+8};
+      if(!(r.right<dotRect.left || r.left>dotRect.right || r.bottom<dotRect.top || r.top>dotRect.bottom)) score += 600;
+
+      let minCurveDist=1e9;
+      for(const pt of curvePx){
+        const d=distPointToRect(pt.x,pt.y,r);
+        if(d<minCurveDist) minCurveDist=d;
+      }
+      if(minCurveDist<14) score += (14-minCurveDist)*120;
+
+      for(const prev of placed){
+        if(!(r.right<prev.left || r.left>prev.right || r.bottom<prev.top || r.top>prev.bottom)) score += 800;
+      }
+
+      if(score<bestScore){bestScore=score;best=c;}
+    }
+    return best;
+  }
+
+  const overlay=marks.map(m=>{
+    const cx=xs(m.x),cy=ys(m.y);
+    const pos=choosePos(m,cx,cy);
+    const rect=rectFor(cx,cy,m.label,pos);
+    placed.push(rect);
+    const tx=pos.anchor==='end' ? cx+pos.dx : pos.anchor==='middle' ? cx+pos.dx : cx+pos.dx;
+    return `<circle cx="${cx}" cy="${cy}" r="6" fill="#1d3b8b" stroke="#fff" stroke-width="2"/><text x="${tx}" y="${cy+pos.dy}" text-anchor="${pos.anchor}" font-size="20" font-weight="700">${m.label}</text>`;
+  }).join('');
+  return drawGridGraph(config).replace('</svg>',overlay+'</svg>');
+}
+function uniformPoints(kind){const m={posAbove:[[0,1],[5,3]],negAbove:[[0,3],[5,1]],zeroAbove:[[0,2],[5,2]],posBelow:[[0,-3],[5,-1]],negBelow:[[0,-1],[5,-3]],zeroBelow:[[0,-2],[5,-2]]};return m[kind]}
+function accelCurve(task){const s=task.curve==='up'?0.45:-0.45;return sample(t=>task.vertexY+s*(t-4)*(t-4),8,.16)}
+function accelY(task,t){const s=task.curve==='up'?0.45:-0.45;return task.vertexY+s*(t-4)*(t-4)}
+
+function graphByKind(kind,width=300,height=210){
+  const cfg={width,height,xMax:6,yMin:-6,yMax:7,yLabel:'x'};let points;
+  if(kind==='eq9')points=sample(t=>-2+3*t+t*t,5,.12);
+  else if(kind==='eq10')points=sample(t=>4-2*t+.5*t*t,5,.12);
+  else if(kind==='eq11')points=sample(t=>-1+4*t-t*t,5,.12);
+  else if(kind==='eq12')points=sample(t=>3-t-.5*t*t,5,.12);
+  else if(kind==='branchUp')points=sample(t=>.55*(t-3)*(t-3)-2,6,.15);
+  else if(kind==='branchDown')points=sample(t=>-.55*(t-3)*(t-3)+2,6,.15);
+  else if(kind==='lineUp')points=[[0,-2],[6,2.5]];
+  else if(kind==='parabolaUp'||kind==='parabolaUpVertex')points=sample(t=>.5*(t-3)*(t-3)-2,6,.15);
+  else if(kind==='parabolaDown'||kind==='parabolaDownVertex')points=sample(t=>-.5*(t-3)*(t-3)+2,6,.15);
+  else if(kind==='aPos')return drawGridGraph({points:[[0,2],[6,2]],yLabel:'aₓ',yMin:-3,yMax:3,xMax:6,width,height});
+  else if(kind==='aNeg')return drawGridGraph({points:[[0,-2],[6,-2]],yLabel:'aₓ',yMin:-3,yMax:3,xMax:6,width,height});
+  else if(kind==='aZero')return drawGridGraph({points:[[0,0],[6,0]],yLabel:'aₓ',yMin:-3,yMax:3,xMax:6,width,height});
+  else if(kind==='aSlope')return drawGridGraph({points:[[0,-1.8],[6,1.8]],yLabel:'aₓ',yMin:-3,yMax:3,xMax:6,width,height});
+  else if(kind==='vIncCross')return drawGridGraph({points:[[0,-3],[6,3]],yLabel:'vₓ',yMin:-4,yMax:4,xMax:6,width,height});
+  else if(kind==='vDecCross')return drawGridGraph({points:[[0,3],[6,-3]],yLabel:'vₓ',yMin:-4,yMax:4,xMax:6,width,height});
+  else if(kind==='vConstPos')return drawGridGraph({points:[[0,2],[6,2]],yLabel:'vₓ',yMin:-4,yMax:4,xMax:6,width,height});
+  return drawGridGraph({...cfg,points});
+}
+function graphChoices(name,items,cols3=false){return `<div class="graph-choice-grid ${cols3?'option-3':''}">${items.map((it,i)=>`<label class="graph-choice"><input type="radio" name="${name}" value="${it.value}"><div class="graph-choice-inner"><div class="graph-choice-title">${it.label||String.fromCharCode(65+i)}</div><div class="svg-box">${graphByKind(it.kind,it.width||300,it.height||210)}</div></div></label>`).join('')}</div>`}
+
+// 1. Равномерное x(t)
+function renderStage1(){const i=appState.idx[0],g=uniformXTasks[i],last=i===uniformXTasks.length-1;mount(`<div class="stage-title"><div><div class="stage-num">Этап 1</div><h2>График координаты при равномерном движении</h2></div><div class="tag">График ${i+1} / ${uniformXTasks.length}</div></div><p class="lead">Определите направление движения тела и знак проекции скорости <i>v<sub>x</sub></i>.</p><div class="grid-2"><div class="mini-card"><div class="svg-box">${drawGridGraph({points:uniformPoints(g.kind),yLabel:'x',yMin:-4,yMax:4,xMax:6,width:430,height:300})}</div></div><div class="task-card"><fieldset><legend>Как движется тело?</legend><div class="choices">${makeChoice('uDir','По направлению оси Ox','По направлению оси Ox')}${makeChoice('uDir','Против направления оси Ox','Против направления оси Ox')}${makeChoice('uDir','Тело покоится','Тело покоится')}</div></fieldset><fieldset><legend>Знак проекции скорости</legend><div class="choices">${makeChoice('uSign','vₓ > 0','vₓ > 0')}${makeChoice('uSign','vₓ = 0','vₓ = 0')}${makeChoice('uSign','vₓ < 0','vₓ < 0')}</div></fieldset><div class="btn-row"><button class="primary" id="checkU">Проверить</button><button class="ok hidden" id="nextU">${last?'Перейти к этапу 2':'Следующий график'}</button></div><div class="feedback" id="fbU"></div></div></div>`);document.getElementById('checkU').onclick=()=>{const d=document.querySelector('input[name="uDir"]:checked'),s=document.querySelector('input[name="uSign"]:checked');if(!d||!s)return showFeedback('fbU','bad','Выберите оба ответа.');const okDir=d.value===g.direction,okSign=s.value===g.sign,ok=(okDir?1:0)+(okSign?1:0);if(okDir)markChosenCorrect(d);else markChosenWrong(d);if(okSign)markChosenCorrect(s);else markChosenWrong(s);scoreOnce(g,'xtUniform',ok,2);showFeedback('fbU',ok===2?'ok':'bad',ok===2?'Верно.':`Верно ${ok} из 2. Правильно: ${g.direction.toLowerCase()}; ${g.sign}.`);document.getElementById('checkU').disabled=true;const n=document.getElementById('nextU');n.classList.remove('hidden');n.onclick=()=>{if(last)finishStage(0,1);else{appState.idx[0]++;renderStage1()}};updateTop()}}
+
+// 2. Равноускоренное x(t): 6 канонических случаев
+function renderStage2(){const i=appState.idx[1],t=accelXTasks[i],last=i===accelXTasks.length-1;const yA=accelY(t,t.aT);mount(`<div class="stage-title"><div><div class="stage-num">Этап 2</div><h2>Читаем параболу x(t)</h2></div><div class="tag">Задание ${i+1} / ${accelXTasks.length}</div></div><p class="lead">Для точки A определите знак проекции скорости, знак проекции ускорения и изменение модуля скорости.</p><div class="grid-2"><div class="mini-card"><div class="svg-box">${markedGraph({points:accelCurve(t),yLabel:'x',yMin:-5,yMax:6,xMax:8,width:450,height:310},[{x:t.aT,y:yA,label:'A'}])}</div></div><div class="task-card"><div class="input-group"><label>Проекция скорости в точке A</label><select id="axV"><option value="">Выберите</option><option>vₓ &gt; 0</option><option>vₓ = 0</option><option>vₓ &lt; 0</option></select></div><div class="input-group" style="margin-top:10px"><label>Проекция ускорения</label><select id="axA"><option value="">Выберите</option><option>aₓ &gt; 0</option><option>aₓ = 0</option><option>aₓ &lt; 0</option></select></div><div class="input-group" style="margin-top:10px"><label>Модуль скорости</label><select id="axS"><option value="">Выберите</option><option>Модуль скорости увеличивается</option><option>Модуль скорости уменьшается</option><option>В точке A тело мгновенно покоится</option></select></div><div class="btn-row"><button class="primary" id="checkAX">Проверить</button><button class="ok hidden" id="nextAX">${last?'Перейти к этапу 3':'Следующее задание'}</button></div><div class="feedback" id="fbAX"></div></div></div>`);document.getElementById('checkAX').onclick=()=>{const v=document.getElementById('axV').value,a=document.getElementById('axA').value,s=document.getElementById('axS').value;if(!v||!a||!s)return showFeedback('fbAX','bad','Выберите все три ответа.');const okV=v===t.vx,okA=a===t.ax,okS=s===t.speed,ok=(okV?1:0)+(okA?1:0)+(okS?1:0);markSelectWrong('axV',okV);markSelectWrong('axA',okA);markSelectWrong('axS',okS);scoreOnce(t,'xtAccel',ok,3);showFeedback('fbAX',ok===3?'ok':'bad',ok===3?'Верно.':`Верно ${ok} из 3. Правильно: ${t.vx}; ${t.ax}; ${t.speed.toLowerCase()}.`);document.getElementById('checkAX').disabled=true;const n=document.getElementById('nextAX');n.classList.remove('hidden');n.onclick=()=>{if(last)finishStage(1,2);else{appState.idx[1]++;renderStage2()}};updateTop()}}
+
+// 3. Смена направления по x(t): оставлено одно задание, дополнительное №8 удалено
+const xDirectionTask={_scored:false};
+function renderStage3(){const pts=sample(t=>.5*(t-4)*(t-4)-2,8,.16),marks=[{x:2,y:0,label:'A'},{x:4,y:-2,label:'B'},{x:5.6,y:-0.88,label:'C'}];mount(`<div class="stage-title"><div><div class="stage-num">Этап 3</div><h2>Смена направления по графику x(t)</h2></div><div class="tag">1 задание</div></div><p class="lead">Определите, меняется ли направление движения. Если меняется — укажите точку, в которой это происходит.</p><div class="grid-2"><div class="mini-card"><div class="svg-box">${markedGraph({points:pts,yLabel:'x',yMin:-4,yMax:6,xMax:8,width:450,height:310},marks)}</div></div><div class="task-card"><div class="input-group"><label>Направление движения</label><select id="xdDecision"><option value="">Выберите</option><option value="change">Меняется</option><option value="no">Не меняется</option></select></div><div class="input-group" style="margin-top:10px"><label>Точка смены направления</label><select id="xdPoint"><option value="">Выберите точку</option><option>A</option><option>B</option><option>C</option></select></div><div class="btn-row"><button class="primary" id="checkXD">Проверить</button><button class="ok hidden" id="nextXD">Перейти к этапу 4</button></div><div class="feedback" id="fbXD"></div></div></div>`);document.getElementById('checkXD').onclick=()=>{const d=document.getElementById('xdDecision').value,p=document.getElementById('xdPoint').value;if(!d)return showFeedback('fbXD','bad','Сначала определите, меняется ли направление движения.');if(d==='change'&&!p)return showFeedback('fbXD','bad','Укажите точку смены направления.');const ok=d==='change'&&p==='B'?1:0;if(d==='change')markSelectWrong('xdDecision',true);else markSelectWrong('xdDecision',false);if(d==='change'){if(p==='B')markSelectWrong('xdPoint',true);else if(p)markSelectWrong('xdPoint',false);}scoreOnce(xDirectionTask,'xtAccel',ok,1);showFeedback('fbXD',ok?'ok':'bad',ok?'Верно: направление меняется в точке B, где vₓ = 0.':'Правильно: направление меняется в точке B.');document.getElementById('checkXD').disabled=true;const n=document.getElementById('nextXD');n.classList.remove('hidden');n.onclick=()=>finishStage(2,3);updateTop()}}
+
+// 4. Уравнение координаты -> график
+function equationOptionItems(branchOnly){if(branchOnly)return [{value:'branchUp',kind:'branchUp',label:'Вариант A'},{value:'branchDown',kind:'branchDown',label:'Вариант B'}];return [{value:'eq9',kind:'eq9',label:'A'},{value:'eq10',kind:'eq10',label:'B'},{value:'eq11',kind:'eq11',label:'C'},{value:'eq12',kind:'eq12',label:'D'}]}
+function renderStage4(){const i=appState.idx[3],t=equationTasks[i],last=i===equationTasks.length-1;mount(`<div class="stage-title"><div><div class="stage-num">Этап 4</div><h2>Уравнение координаты и вид графика x(t)</h2></div><div class="tag">Задание ${i+1} / ${equationTasks.length}</div></div><p class="lead">${t.branchOnly?'Выберите, как направлены ветви графика x(t).':'Выберите график x(t), соответствующий уравнению движения.'}</p><div class="formula-card"><i>${t.formula}</i></div>${graphChoices('eqChoice',equationOptionItems(t.branchOnly),false)}<div class="btn-row"><button class="primary" id="checkEq">Проверить</button><button class="ok hidden" id="nextEq">${last?'Перейти к этапу 5':'Следующее задание'}</button></div><div class="feedback" id="fbEq"></div>`);document.getElementById('checkEq').onclick=()=>{const c=document.querySelector('input[name="eqChoice"]:checked');if(!c)return showFeedback('fbEq','bad','Выберите график.');const ok=c.value===t.correct?1:0;if(ok)markChosenCorrect(c);else markChosenWrong(c);scoreOnce(t,'equation',ok,1);showFeedback('fbEq',ok?'ok':'bad',ok?'Верно.':`Неверно. Выберите график, соответствующий знаку коэффициента при t²${t.branchOnly?' — он определяет направление ветвей.':''}`);document.getElementById('checkEq').disabled=true;const n=document.getElementById('nextEq');n.classList.remove('hidden');n.onclick=()=>{if(last)finishStage(3,4);else{appState.idx[3]++;renderStage4()}};updateTop()}}
+
+// 5. Анализ vₓ(t)
+function velocitySegment(t){if(t.vxSign==='pos'){if(t.aSign==='pos')return [[0,1],[5,2]];if(t.aSign==='neg')return [[0,2],[5,1]];return [[0,2],[5,2]]}if(t.aSign==='neg')return [[0,-1],[5,-2]];if(t.aSign==='pos')return [[0,-2],[5,-1]];return [[0,-2],[5,-2]]}
+function renderStage5(){const i=appState.idx[4],t=velocityTasks[i],last=i===velocityTasks.length-1;mount(`<div class="stage-title"><div><div class="stage-num">Этап 5</div><h2>Анализируем график vₓ(t)</h2></div><div class="tag">Ситуация ${i+1} / ${velocityTasks.length}</div></div><p class="lead">Определите направление движения и изменение модуля скорости.</p><div class="grid-2"><div class="task-card"><div class="svg-box">${drawGridGraph({points:velocitySegment(t),yLabel:'vₓ',yMin:-3,yMax:3,xMax:6,width:430,height:280})}</div></div><div class="task-card"><div class="select-row"><div class="input-group"><label>Направление движения</label><select id="vDir"><option value="">Выберите</option><option>По направлению оси Ox</option><option>Против направления оси Ox</option></select></div><div class="input-group"><label>Модуль скорости</label><select id="vSpeed"><option value="">Выберите</option><option>Модуль скорости увеличивается</option><option>Модуль скорости уменьшается</option><option>Модуль скорости не изменяется</option></select></div></div><div class="btn-row"><button class="primary" id="checkV">Проверить</button><button class="ok hidden" id="nextV">${last?'Перейти к этапу 6':'Следующая ситуация'}</button></div><div class="feedback" id="fbV"></div></div></div>`);document.getElementById('checkV').onclick=()=>{const d=document.getElementById('vDir').value,s=document.getElementById('vSpeed').value;if(!d||!s)return showFeedback('fbV','bad','Выберите оба ответа.');const okD=d===t.direction,okS=s===t.speed,ok=(okD?1:0)+(okS?1:0);markSelectWrong('vDir',okD);markSelectWrong('vSpeed',okS);scoreOnce(t,'vt',ok,2);showFeedback('fbV',ok===2?'ok':'bad',ok===2?`Верно. ${t.explain}`:`Верно ${ok} из 2. ${t.explain}`);document.getElementById('checkV').disabled=true;const n=document.getElementById('nextV');n.classList.remove('hidden');n.onclick=()=>{if(last)finishStage(4,5);else{appState.idx[4]++;renderStage5()}};updateTop()}}
+
+// 6. Смена направления по vₓ(t)
+let dirDecision=null,dirPoint=null;
+function drawClickableDir(task){const width=430,height=280,margin={left:68,right:42,top:28,bottom:42},innerW=width-margin.left-margin.right,innerH=height-margin.top-margin.bottom;const xs=x=>margin.left+(x/9)*innerW,ys=y=>margin.top+((3-y)/6)*innerH;let base=drawGridGraph({points:task.points,yLabel:'vₓ',yMin:-3,yMax:3,xMax:9,width,height,candidates:task.zeroCandidates});const over=task.zeroCandidates.map(c=>`<circle class="dirPick" data-x="${c}" cx="${xs(c)}" cy="${ys(0)}" r="18" fill="rgba(37,99,235,.001)" style="cursor:pointer"/>`).join('');return base.replace('</svg>',over+'</svg>')}
+function renderStage6(){const i=appState.idx[5],t=velocityDirectionTasks[i],last=i===velocityDirectionTasks.length-1;dirDecision=null;dirPoint=null;mount(`<div class="stage-title"><div><div class="stage-num">Этап 6</div><h2>Изменяется ли направление движения?</h2></div><div class="tag">График ${i+1} / ${velocityDirectionTasks.length}</div></div><p class="lead">Выберите «Меняется» или «Не меняется». Если меняется — выберите точку на графике.</p><div class="grid-2"><div class="task-card"><div class="svg-box">${drawClickableDir(t)}</div><div class="status-line" id="dirStatus">Точка не выбрана</div></div><div class="task-card"><div class="btn-row"><button class="answer-choice" id="dirYes">Меняется</button><button class="answer-choice" id="dirNo">Не меняется</button></div><div class="btn-row"><button class="primary" id="checkDir">Проверить</button><button class="ok hidden" id="nextDir">${last?'Перейти к этапу 7':'Следующий график'}</button></div><div class="feedback" id="fbDir"></div></div></div>`);document.getElementById('dirYes').onclick=()=>{dirDecision='change';document.getElementById('dirYes').classList.add('selected');document.getElementById('dirNo').classList.remove('selected')};document.getElementById('dirNo').onclick=()=>{dirDecision='no';dirPoint=null;document.getElementById('dirNo').classList.add('selected');document.getElementById('dirYes').classList.remove('selected');document.getElementById('dirStatus').textContent='Точка не требуется'};document.querySelectorAll('.dirPick').forEach(el=>el.onclick=()=>{dirDecision='change';dirPoint=Number(el.dataset.x);document.getElementById('dirYes').classList.add('selected');document.getElementById('dirNo').classList.remove('selected');document.getElementById('dirStatus').textContent=`Выбрано: t = ${dirPoint} с`});document.getElementById('checkDir').onclick=()=>{if(!dirDecision)return showFeedback('fbDir','bad','Выберите ответ.');if(dirDecision==='change'&&dirPoint===null)return showFeedback('fbDir','bad','Выберите точку на графике.');const expected=t.correct===null?'no':'change',ok=dirDecision===expected&&(expected==='no'||dirPoint===t.correct)?1:0;if(ok){document.getElementById(expected==='change'?'dirYes':'dirNo')?.classList.add('answer-correct');if(expected==='change'&&dirPoint===t.correct){document.getElementById('dirStatus')?.classList.add('answer-correct');document.querySelector(`.dirPick[data-x="${dirPoint}"]`)?.classList.add('answer-correct')}}else{if(dirDecision!==expected){document.getElementById(dirDecision==='change'?'dirYes':'dirNo')?.classList.add('answer-wrong')}else if(expected==='change'&&dirPoint!==t.correct){document.getElementById('dirStatus')?.classList.add('answer-wrong');document.querySelector(`.dirPick[data-x="${dirPoint}"]`)?.classList.add('answer-wrong')}}scoreOnce(t,'dir',ok,1);showFeedback('fbDir',ok?'ok':'bad',ok?(t.correct===null?'Верно: направление не изменяется.':`Верно: направление изменяется при t = ${t.correct} с.`):(t.correct===null?'Правильно: направление не изменяется.':`Правильно: направление изменяется при t = ${t.correct} с.`));document.getElementById('checkDir').disabled=true;const n=document.getElementById('nextDir');n.classList.remove('hidden');n.onclick=()=>{if(last)finishStage(5,6);else{appState.idx[5]++;renderStage6()}};updateTop()}}
+
+// 7. Вид графика ускорения
+function renderStage7(){const i=appState.idx[6],t=accelGraphTasks[i],last=i===accelGraphTasks.length-1;let body;if(t.kind==='graph'){body=graphChoices('aGraph',[{value:'aPos',kind:'aPos',label:'A'},{value:'aNeg',kind:'aNeg',label:'B'},{value:'aZero',kind:'aZero',label:'C'},{value:'aSlope',kind:'aSlope',label:'D'}]);}else{body=`<fieldset><legend>Выберите утверждение</legend><div class="choices">${makeChoice('aStmt','sloped','Если ускорение постоянно, график aₓ(t) — наклонная прямая.')}${makeChoice('aStmt','horizontal','Если ускорение постоянно, график aₓ(t) — горизонтальная прямая.')}${makeChoice('aStmt','parabola','Если ускорение постоянно, график aₓ(t) — парабола.')}</div></fieldset>`}mount(`<div class="stage-title"><div><div class="stage-num">Этап 7</div><h2>Как выглядит график ускорения aₓ(t)?</h2></div><div class="tag">Задание ${i+1} / ${accelGraphTasks.length}</div></div><p class="lead">${t.prompt}</p>${body}<div class="btn-row"><button class="primary" id="checkAG">Проверить</button><button class="ok hidden" id="nextAG">${last?'Перейти к этапу 8':'Следующее задание'}</button></div><div class="feedback" id="fbAG"></div>`);document.getElementById('checkAG').onclick=()=>{const c=t.kind==='graph'?document.querySelector('input[name="aGraph"]:checked'):document.querySelector('input[name="aStmt"]:checked');if(!c)return showFeedback('fbAG','bad','Выберите ответ.');const ok=c.value===t.correct?1:0;if(ok)markChosenCorrect(c);else markChosenWrong(c);scoreOnce(t,'accel',ok,1);showFeedback('fbAG',ok?'ok':'bad',ok?'Верно.':'Неверно. При постоянном ускорении aₓ(t) не изменяется со временем, поэтому график горизонтальный.');document.getElementById('checkAG').disabled=true;const n=document.getElementById('nextAG');n.classList.remove('hidden');n.onclick=()=>{if(last)finishStage(6,7);else{appState.idx[6]++;renderStage7()}};updateTop()}}
+
+// 8. Сопоставление x(t) и aₓ(t)
+function accelSelect(id){return `<select id="${id}"><option value="">Выберите aₓ(t)</option><option value="aPos">Постоянное aₓ > 0</option><option value="aNeg">Постоянное aₓ < 0</option><option value="aZero">aₓ = 0</option></select>`}
+function renderStage8(){const i=appState.idx[7],t=matchXATasks[i],last=i===matchXATasks.length-1;let body;if(t.kind==='single'){body=`<div class="mini-card" style="max-width:760px;margin:0 auto 14px"><h3>График x(t)</h3><div class="svg-box">${graphByKind(t.xKind,520,300)}</div></div><div class="task-card"><h3>Выберите aₓ(t)</h3>${graphChoices('matchA',[{value:'aPos',kind:'aPos',label:'A',width:360,height:220},{value:'aNeg',kind:'aNeg',label:'B',width:360,height:220},{value:'aZero',kind:'aZero',label:'C',width:360,height:220}],true)}</div>`}else{body=`<div class="match-list"><div class="match-row"><div><b>1. Прямая x(t)</b><div class="svg-box">${graphByKind('lineUp',330,210)}</div></div><div>${accelSelect('m1')}</div></div><div class="match-row"><div><b>2. Парабола ветвями вверх</b><div class="svg-box">${graphByKind('parabolaUp',330,210)}</div></div><div>${accelSelect('m2')}</div></div><div class="match-row"><div><b>3. Парабола ветвями вниз</b><div class="svg-box">${graphByKind('parabolaDown',330,210)}</div></div><div>${accelSelect('m3')}</div></div></div>`}mount(`<div class="stage-title"><div><div class="stage-num">Этап 8</div><h2>Сопоставляем x(t) и aₓ(t)</h2></div><div class="tag">Задание ${i+1} / ${matchXATasks.length}</div></div><p class="lead">${t.kind==='single'?'К данному графику координаты выберите соответствующий график ускорения.':'Сопоставьте каждый график координаты с характером ускорения.'}</p>${body}<div class="btn-row"><button class="primary" id="checkMatch">Проверить</button><button class="ok hidden" id="nextMatch">${last?'Перейти к этапу 9':'Следующее задание'}</button></div><div class="feedback" id="fbMatch"></div>`);document.getElementById('checkMatch').onclick=()=>{let ok,total;if(t.kind==='single'){const c=document.querySelector('input[name="matchA"]:checked');if(!c)return showFeedback('fbMatch','bad','Выберите график ускорения.');ok=c.value===t.correct?1:0;if(ok)markChosenCorrect(c);else markChosenWrong(c);total=1}else{const a=document.getElementById('m1').value,b=document.getElementById('m2').value,c=document.getElementById('m3').value;if(!a||!b||!c)return showFeedback('fbMatch','bad','Заполните все три соответствия.');const ok1=a==='aZero',ok2=b==='aPos',ok3=c==='aNeg';markSelectWrong('m1',ok1);markSelectWrong('m2',ok2);markSelectWrong('m3',ok3);ok=(ok1?1:0)+(ok2?1:0)+(ok3?1:0);total=3}scoreOnce(t,'match',ok,total);showFeedback('fbMatch',ok===total?'ok':'bad',ok===total?'Верно.':`Верно ${ok} из ${total}. Прямая x(t) → aₓ=0; ветви вверх → aₓ>0; ветви вниз → aₓ<0.`);document.getElementById('checkMatch').disabled=true;const n=document.getElementById('nextMatch');n.classList.remove('hidden');n.onclick=()=>{if(last)finishStage(7,8);else{appState.idx[7]++;renderStage8()}};updateTop()}}
+
+// 9. Связь x(t), vₓ(t), aₓ(t)
+function renderStage9(){const i=appState.idx[8],t=tripleTasks[i],last=i===tripleTasks.length-1;mount(`<div class="stage-title"><div><div class="stage-num">Этап 9</div><h2>Связываем три графика</h2></div><div class="tag">Задание ${i+1} / ${tripleTasks.length}</div></div><p class="lead">Для данного графика x(t) выберите соответствующие графики vₓ(t) и aₓ(t).</p><div class="mini-card" style="max-width:520px;margin:0 auto 14px"><h3>Дан график x(t)</h3><div class="svg-box">${graphByKind(t.xKind,460,280)}</div></div><div class="task-card"><h3>1. Выберите vₓ(t)</h3>${graphChoices('trV',[{value:'vIncCross',kind:'vIncCross',label:'A'},{value:'vDecCross',kind:'vDecCross',label:'B'},{value:'vConstPos',kind:'vConstPos',label:'C'}],true)}</div><div class="task-card" style="margin-top:14px"><h3>2. Выберите aₓ(t)</h3>${graphChoices('trA',[{value:'aPos',kind:'aPos',label:'A'},{value:'aNeg',kind:'aNeg',label:'B'},{value:'aZero',kind:'aZero',label:'C'}],true)}</div><div class="btn-row"><button class="primary" id="checkTriple">Проверить</button><button class="ok hidden" id="nextTriple">${last?'Перейти к этапу 10':'Следующее задание'}</button></div><div class="feedback" id="fbTriple"></div>`);document.getElementById('checkTriple').onclick=()=>{const v=document.querySelector('input[name="trV"]:checked'),a=document.querySelector('input[name="trA"]:checked');if(!v||!a)return showFeedback('fbTriple','bad','Выберите оба графика.');const okV=v.value===t.vCorrect,okA=a.value===t.aCorrect,ok=(okV?1:0)+(okA?1:0);if(okV)markChosenCorrect(v);else markChosenWrong(v);if(okA)markChosenCorrect(a);else markChosenWrong(a);scoreOnce(t,'triple',ok,2);showFeedback('fbTriple',ok===2?'ok':'bad',ok===2?'Верно.':`Верно ${ok} из 2.`);document.getElementById('checkTriple').disabled=true;const n=document.getElementById('nextTriple');n.classList.remove('hidden');n.onclick=()=>{if(last)finishStage(8,9);else{appState.idx[8]++;renderStage9()}};updateTop()}}
+
+// 10. Построение vₓ(t) — сохранённое финальное задание
+function renderStage10(){mount(`<div class="stage-title"><div><div class="stage-num">Этап 10</div><h2>Постройте график vₓ(t) по описанию</h2></div><div class="tag">Финальное задание</div></div><p class="lead">Перетаскивайте синие точки вверх и вниз. Точки фиксируются на линиях сетки.</p><div class="builder-desc"><p class="lead" style="margin-bottom:10px"><b>Постройте график проекции скорости v<sub>x</sub>(t) по описанию движения.</b></p><div class="motion-steps"><div class="motion-step"><div class="motion-time">0–3 с</div><div class="motion-text">В начальный момент тело покоится. Затем оно движется <b>по направлению оси Ox</b>, модуль скорости увеличивается. К моменту <b>t = 3 с</b> модуль скорости равен <b>2 м/с</b>.</div></div><div class="motion-step"><div class="motion-time">3–5 с</div><div class="motion-text">Тело продолжает двигаться <b>по направлению оси Ox</b> с постоянной скоростью.</div></div><div class="motion-step"><div class="motion-time">5–7 с</div><div class="motion-text">Тело движется <b>по направлению оси Ox</b>, модуль скорости уменьшается. В момент <b>t = 7 с</b> тело останавливается.</div></div><div class="motion-step"><div class="motion-time">7–10 с</div><div class="motion-text">Тело движется <b>против направления оси Ox</b>, модуль скорости увеличивается. К моменту <b>t = 10 с</b> модуль скорости равен <b>3 м/с</b>.</div></div></div></div><div class="grid-2" style="margin-top:14px"><div class="task-card"><h3>Построение</h3><div class="svg-box">${drawBuilder()}</div><div class="legend-inline"><span>Ключевые моменты времени: 0, 3, 5, 7 и 10 с</span></div></div><div class="task-card"><h3>Действия</h3><div class="btn-row"><button class="primary" id="checkBuild">Проверить</button><button class="secondary" id="resetBuild">Сбросить</button><button class="ok hidden" id="finalBtn">Показать итог</button></div><div class="feedback" id="fbBuild"></div></div></div>`);bindBuilder();document.getElementById('checkBuild').onclick=checkBuild;document.getElementById('resetBuild').onclick=()=>{appState.builder.values=[0,0,0,0,0];renderStage10()};document.getElementById('finalBtn').onclick=renderFinal}
+function drawBuilder(){const width=540,height=330,margin={left:78,right:48,top:32,bottom:46},innerW=width-margin.left-margin.right,innerH=height-margin.top-margin.bottom,xPos=[0,3,5,7,10],xMax=10,yMin=-3,yMax=3,xScale=x=>margin.left+(x/xMax)*innerW,yScale=v=>margin.top+((yMax-v)/(yMax-yMin))*innerH,axisY=yScale(0),pts=xPos.map((x,i)=>({x:xScale(x),y:yScale(appState.builder.values[i])}));let grid='';for(let x=0;x<=10;x++){const px=xScale(x);grid+=`<line x1="${px}" y1="${margin.top}" x2="${px}" y2="${margin.top+innerH}" stroke="#94A3B8" stroke-width="0.8"/>`}for(let y=-3;y<=3;y++){const py=yScale(y);grid+=`<line x1="${margin.left}" y1="${py}" x2="${margin.left+innerW}" y2="${py}" stroke="#94A3B8" stroke-width="0.8"/>`}const axisEndX=margin.left+innerW+9;return `<svg id="builderSvg" viewBox="0 0 ${width} ${height}"><rect width="${width}" height="${height}" fill="#fff"/>${grid}<line x1="${margin.left}" y1="${axisY}" x2="${axisEndX}" y2="${axisY}" stroke="#000" stroke-width="1.8"/><polygon points="${axisEndX},${axisY} ${axisEndX-8},${axisY-4} ${axisEndX-8},${axisY+4}" fill="#000"/><line x1="${margin.left}" y1="${margin.top+innerH}" x2="${margin.left}" y2="${margin.top-9}" stroke="#000" stroke-width="1.8"/><polygon points="${margin.left},${margin.top-9} ${margin.left-4},${margin.top-1} ${margin.left+4},${margin.top-1}" fill="#000"/><text x="${margin.left-12}" y="${axisY+17}" text-anchor="end" font-size="17" font-weight="700">0</text><text x="${axisEndX-2}" y="${axisY-8}" text-anchor="end" font-size="16" font-style="italic" font-weight="700">t, с</text><text x="${margin.left-10}" y="${margin.top-13}" text-anchor="end" font-size="16" font-style="italic" font-weight="700">vₓ, м/с</text>${xPos.filter(x=>x!==0).map(x=>`<text x="${xScale(x)}" y="${axisY+19}" text-anchor="middle" font-size="13">${x}</text>`).join('')}<polyline id="builderLine" points="${pts.map(p=>`${p.x},${p.y}`).join(' ')}" fill="none" stroke="#1d3b8b" stroke-width="3"/>${pts.map((p,i)=>`<circle class="drag-point" data-i="${i}" cx="${p.x}" cy="${p.y}" r="9" fill="#1d3b8b" stroke="#fff" stroke-width="2"/>`).join('')}</svg>`}
+function bindBuilder(){const svg=document.getElementById('builderSvg');if(!svg)return;const height=330,margin={top:32,bottom:46},innerH=height-margin.top-margin.bottom,yMin=-3,yMax=3,yScale=v=>margin.top+((yMax-v)/(yMax-yMin))*innerH,clientToValue=clientY=>{const pt=svg.createSVGPoint();pt.x=0;pt.y=clientY;const ctm=svg.getScreenCTM();if(!ctm)return 0;const local=pt.matrixTransform(ctm.inverse()),raw=yMax-((local.y-margin.top)/innerH)*(yMax-yMin);return Math.max(yMin,Math.min(yMax,Math.round(raw)))},refresh=()=>{const cs=[...svg.querySelectorAll('.drag-point')];cs.forEach((c,i)=>c.setAttribute('cy',yScale(appState.builder.values[i])));document.getElementById('builderLine').setAttribute('points',cs.map(c=>`${c.getAttribute('cx')},${c.getAttribute('cy')}`).join(' '))},move=e=>{if(appState.builder.dragging===null)return;if(e.cancelable)e.preventDefault();appState.builder.values[appState.builder.dragging]=clientToValue(e.clientY);refresh()},stop=()=>{appState.builder.dragging=null;window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',stop);window.removeEventListener('pointercancel',stop)};svg.querySelectorAll('.drag-point').forEach(c=>c.addEventListener('pointerdown',e=>{if(e.cancelable)e.preventDefault();appState.builder.dragging=Number(c.dataset.i);window.addEventListener('pointermove',move,{passive:false});window.addEventListener('pointerup',stop,{once:true});window.addEventListener('pointercancel',stop,{once:true})}))}
+function checkBuild(){const v=appState.builder.values,criteria=[v[0]===0,v[1]===2,v[2]===2,v[3]===0,v[4]===-3],okAll=criteria.every(Boolean),task=appState.builder;if(!task._scored){const pts=okAll?2:0;appState.score+=pts;appState.correct+=pts;appState.diagnostics.build.ok+=pts;appState.diagnostics.build.total+=2;task._scored=true;appState.stageDone[9]=true}document.querySelectorAll('.drag-point').forEach((p,i)=>{if(criteria[i])p.classList.add('answer-correct');else p.classList.add('answer-wrong')});const details=[`${criteria[0]?'✓':'✗'} t=0: vₓ=0`,`${criteria[1]?'✓':'✗'} t=3 с: vₓ=+2 м/с`,`${criteria[2]?'✓':'✗'} t=5 с: vₓ=+2 м/с`,`${criteria[3]?'✓':'✗'} t=7 с: vₓ=0`,`${criteria[4]?'✓':'✗'} t=10 с: vₓ=−3 м/с`].join('<br>');showFeedback('fbBuild',okAll?'ok':'bad',`${okAll?'Верно.':'Не всё верно.'}<br>${details}`);document.getElementById('finalBtn').classList.remove('hidden');updateTop()}
+
+function renderFinal(){stopTimer();document.getElementById('progressBar').style.width='100%';const blocks=Object.values(appState.diagnostics).map(item=>{const ratio=item.total?item.ok/item.total:0,status=ratio>=.75?'ok':ratio>=.45?'info':'bad',title=status==='ok'?'Получается уверенно':status==='info'?'Есть неточности':'Нужно повторить';return `<div class="summary-card"><h3>${item.name}</h3><div class="feedback ${status}" style="display:block;margin-top:0">${title}: ${item.ok} из ${item.total}</div></div>`}).join('');mount(`<div class="stage-title"><div><div class="stage-num">Итог</div><h2>Результаты тренажёра</h2></div><div style="display:flex;gap:8px;flex-wrap:wrap"><div class="tag">Баллы: ${appState.score} / ${MAX_SCORE}</div><div class="tag">Время: ${formatElapsed(getElapsedMs())}</div></div></div><div class="final-grid">${blocks}</div><div class="btn-row"><button class="primary" id="restart">Пройти заново</button><button class="secondary" id="backBuild">Вернуться к построению</button></div>`);document.getElementById('restart').onclick=()=>location.reload();document.getElementById('backBuild').onclick=()=>goToStage(9)}
+
+const renders=[renderStage1,renderStage2,renderStage3,renderStage4,renderStage5,renderStage6,renderStage7,renderStage8,renderStage9,renderStage10];
+function goToStage(i){appState.stage=i;updateTop();renders[i]()}
+initTheme();initTimerControls();updateTop();goToStage(0);
+
+</script>
+</body>
+</html>
